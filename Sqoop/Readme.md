@@ -1,4 +1,4 @@
-## Sqoop v1.4.6
+# Sqoop v1.4.6
 
 Latest available version 2
 
@@ -9,7 +9,7 @@ Sqoop is mainly used for automation of importing and exporting data.
 
 ### Life cycle of sqoop command
 
-**First a SQL query is execute to understand the data by fetching one record to access the meta-data information of the columns.**
+**In the first step, a SQL query is generated and execute to understand the data by fetching just one record to access the meta-data information of the columns.**
 sample query
 ```
 select * from sample_table limit 1
@@ -24,14 +24,13 @@ This jar file is executed to start the import process
 Data split into mutually exclusive records based on Boundry query and num-mappers
 
 **By default 4 mappers are used, i.e 4 threads to import the data from the source**
-> More threads = faster the import process = Causes too much load on the source database
+> More threads = faster the import process = Causes more load on the source database
 
 ----
 
 **Note:**
 
 - \ - line break
-- sqoop-list-databases or sqoop list-databases
 - 3306 default port for access RDBMS can be omitted 
 
 **Note: Number of mappers used = Number of files generated.**
@@ -41,13 +40,38 @@ Data split into mutually exclusive records based on Boundry query and num-mapper
 **Note: When -m 1 is used the data is imported sequentially.**
 
 ----
+| **Sqoop commands list** |
+| ------------------- |
+| **1. List databases** |
+| **2. List tables for a given database** |
+| **3. Using sqoop eval** |
+| **4. Import table new_table to warehouse-dir** |
+| **5. Configure mappers to 2** |
+| **6. import data with 2 mappers to warehouse-dir** |
+| **7. Using --delete-target-dir command** |
+| **8. Append additional imported files to existing dir** |
+| **9. Try to run the following import command on a table without a primary key** |
+| **10. Use split-by to import data from a table without PK** |
+| **11. Use split-by on a non numberic column** |
+| **12. Use split-by on a non numberic column and set: -Dorg.apache.sqoop.splitter.allow_text_splitter to True** |
+| **13. Import data as sequencefile** |
+| **14. Import data as avrodatafile** |
+| **15. Import data as textfile** |
+| **16. Import data as parquetfile** |
+| **17. Import data as text file and compress the data.** |
+| **18. Import data as text file and compress the data into SnappyCodec format.** |
+| **19. Import data as text file and compress with specific bounding query** |
+| **20. Import data from specific columns** |
+| **21. Import data from multiple tables and specific columns** |
+| **21. Import data from multiple tables and specific columns** |
+----
 
 Alias for tags
 
 | Command | Alias-1 | Alias-2 | Description |
 | ------- | ------- | ------- | ----------- |
 | --Password | -P | --password-file | Password for connection to database |
-| --sqoop-list-database | sqoop list-databases | - | Listing the databases in source |
+| sqoop-list-database | sqoop list-databases | - | Listing the databases in source |
 | --num-mappers | -m | - | Configuring the number of mappers |
 | --query | -e | - | Query tag |
 | -z | --compress | - | Enable\Disable compression |
@@ -297,7 +321,6 @@ sqoop import \
 | --as-sequencefile | Binary format |
 | --as-textfile | Simple text  (Default) |
 | --as-parquetfile | Binary Columnar file format |
-```
 
 **13. Import data as sequencefile**
 ```
@@ -443,7 +466,7 @@ sqoop import \
 ```
 **21. Import data from multiple tables and specific columns**
 
-**Note: When using --query tag:
+**Note: When using --query tag:**
 - We cannot use --table
 - We cannot use --column
 - we have to use --split-by or use num-mappers only 1
