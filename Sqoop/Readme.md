@@ -380,7 +380,7 @@ Property passed as parameter
 **It's actually hint to use: "-Dorg.apache.sqoop.splitter.allow_text_splitter=True" **
 
 **12. Use split-by on a non numberic column and set: -Dorg.apache.sqoop.splitter.allow_text_splitter to True**
-
+```
 sqoop import \
     -Dorg.apache.sqoop.splitter.allow_text_splitter=True    \
     --connect jdbc:mysq://my.server.com:3306/my_database    \
@@ -389,7 +389,7 @@ sqoop import \
     --table table_without_PK    \
     --warehouse-dir <dir>   \
     --split-by first_name
-
+```
 ----
 
 **Importing files in various file formats**
@@ -534,7 +534,7 @@ sqoop import \
      --as-textfile \
      -z \
      --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
-     **--boundary-query "select min(order_id),max(order_id) from orders where order_id >=30000";**
+     --boundary-query "select min(order_id),max(order_id) from orders where order_id >=30000";
 ```
 
 **Note: Same task can be achieved with the following commands**
@@ -545,7 +545,7 @@ sqoop import \
      --password cloudera \
      --table orders \
      --columns order_id \
-     **--where "order_id>30000" \**
+     --where "order_id>30000" \
      --delete-target-dir \
      --target-dir sqoop/warehouse/partial_orders \
      --as-textfile \
