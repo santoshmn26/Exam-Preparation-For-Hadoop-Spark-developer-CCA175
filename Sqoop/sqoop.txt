@@ -1,0 +1,214 @@
+First check all the users of the databases
+mysql -u root -p cloudera
+SELECT User, Host, Password FROM mysql.user;
+
+1. List databases
+sqoop list-databases \
+--connect jdbc:mysql://localhost:3306 \
+--username root \
+-P
+
+2. List tables for a given database
+sqoop list-tables \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera
+
+3. Using sqoop eval
+sqoop eval \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--e "select *from orders limit 5";
+
+sqoop eval \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--query "select *from orders limit 5";
+
+sqoop eval \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+-e "insert into orders values ( 68885, /"2013-07-25 00:00:00.0/", 256, 'COMPLETE')";
+
+sqoop eval with DDL command
+sqoop eval \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+-e "create table new_table( i int)";
+
+Verify table creation
+sqoop eval \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+-e "select * from new_table";
+
+4. Import table new_table to warehouse-dir
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root	 \
+--password cloudera \
+--table orders \
+--warehouse-dir /sqoop/warehouse
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root	 \
+--password cloudera \
+--table orders \
+--target-dir /sqoop/warehouse
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root  \
+--password cloudera \
+--target-dir /sqoop/warehouse \
+-m 2 \
+--table orders
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root  \
+--password cloudera \
+--target-dir sqoop/warehouse \
+-m 2 \
+--table orders \
+--delete-target-dir
+
+sqoop eval \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+-e "insert into orders values ( 68887, '2013-07-25 00:00:00.0', 256, 'COMPLETE')";
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--append
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--target-dir sqoop/warehouse/avrodata \
+--as-avrodatafile
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--target-dir sqoop/warehouse/sequencefile \
+--as-sequencefile
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--target-dir sqoop/warehouse/textfile \
+--as-textfile
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--target-dir sqoop/warehouse/parquet \
+--as-parquetfile
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--target-dir sqoop/warehouse/textfile \
+--as-textfile \
+-z
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--target-dir sqoop/warehouse/textfile \
+--as-textfile \
+--compress
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table orders \
+--target-dir sqoop/warehouse/sequencefile \
+--as-sequencefile \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table table_no_pk \
+--target-dir sqoop/warehouse/no_pk \
+--as-textfile \
+-z \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec
+
+sqoop import \
+--connect jdbc:mysql://localhost:3306/retail_db \
+--username root \
+--password cloudera \
+--table table_no_pk \
+--target-dir sqoop/warehouse/no_pk \
+--as-textfile \
+-z \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+-m 1
+
+
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table table_no_pk \
+     --delete-target-dir \
+     --target-dir sqoop/warehouse/no_pk \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+     --split-by customer_id
+
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table orders \
+     --delete-target-dir \
+     --target-dir sqoop/warehouse/partial_orders \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+     --boundary-query "select min(order_id),max(order_id) from orders where order_id >=30000";
+
+
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table orders \
+     --columns order_id \
+     --where "order_id>30000" \
+     --delete-target-dir \
+     --target-dir sqoop/warehouse/partial_orders \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec 
