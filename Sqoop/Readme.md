@@ -70,8 +70,10 @@ Alias for tags
 
 | Command | Alias-1 | Alias-2 | Description |
 | ------- | ------- | ------- | ----------- |
-| --Password | -P | --password-file | Password for connection to database |
-| sqoop-list-database | sqoop list-databases | - | Listing the databases in source |
+| sqoop-help | sqoop help | - | List all commands for sqoop |
+| version | - | - | Display the version of the sqoop installed |
+| --Password | -P | --password-file | Password for connecting to the database |
+| sqoop-list-database | sqoop list-databases | - | List all the database in source |
 | --num-mappers | -m | - | Configuring the number of mappers |
 | --query | -e | - | Query tag |
 | -z | --compress | - | Enable\Disable compression |
@@ -126,7 +128,7 @@ sqoop eval \
     -P  \
     -e "create table new_table(i INT)"
 ```
-
+**Verify creation of table**
 ```
 sqoop eval \
     --connect jdbc:mysql://my.server.com:3306/my_database   \
@@ -140,7 +142,7 @@ sqoop eval \
 **4. Import table new_table to warehouse-dir**
 
 **Note: Default mappers: 4**
-
+**Note: If target-dir and warehouse-dir not passed then by defalut the imported data is stored in the home path of hdfs. i.e /table_name
 --num-mappers or -m decide how many mappers are used for importing data
 ```
 sqoop import \
@@ -176,6 +178,28 @@ sqoop import \
 
 - --target-dir <dir> HDFS destination dir, No sub directory created all the imported files are imported to specified <dir>
 - --warehouse-dir <dir> sub dir created with table name and that dir contains data files
+
+- In simple terms:
+1. If target-dir is used we can specify the name of the output directory under which four part-m files are created
+   ex: when we use target-dir sqoop/warehouse/output
+       **The output is stored at sqoop/warehouse/output/**
+       Now if we execute **hadoop fs -ls sqoop/warehouse/output** we get four files
+       part-m-00001
+       part-m-00002
+       part-m-00003
+       part-m-00004
+2. If warehouse-dir is use a sub dir is created with the name of the table under which the the part-m files are created
+   ex: when we use warehouse-dir sqoop/warehouse/output
+       **The output files are stored under a newely created dir that with the table name
+       i.e **sqoop/warehouse/output/table_name**
+       Now to check the output file we need to execute
+       **hadoop fs -ls sqoop/warehouse/output/table_name** we get
+       part-m-00001
+       part-m-00002
+       part-m-00003
+       part-m-00004       
+       **table_name is the new dir that is created.**
+
 
 **Note: --delete-target-dir: No additional arguments passed, delete dir if exists**
 
@@ -243,13 +267,17 @@ Because all the primary key values defined in a table are **indexed**.
 ```
 
 **9. Try to run the followin import command on a table without a primary key**
-
+```
 sqoop import \
-    --connect jdbc:mysql://my.server.com/my_database    \
-    --username user     \
-    --password pass     \
-    --table table_without_PK        \
-    --warehouse-dir <dir>
+    --connect jdbc:mysql://localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --table table_no_pk \
+    --target-dir sqoop/warehouse/no_pk \
+    --as-textfile \
+    -z \
+    --compression-codec org.apache.hadoop.io.compress.SnappyCodec
+```
 
 We get an ERROR! as follows
 ```
@@ -262,6 +290,43 @@ Note: When -m 1 (Only one mapper is used) is used sqoop does not execute its Bou
 
 When -m 1 is used the data is imported sequentially.
 
+**10. Use split-by to import data from a table without PK**
+
+First create a table without a primary key
+execute the following sql
+create table table_no_pk ( select * from customers);
+
+Now type **describe table_no_pk** to confirm that there is no PK.
+```
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table table_no_pk \
+     --target-dir sqoop/warehouse/no_pk \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec
+```
+we get error as follows:
+**Import failed: No primary key could be found for table table_no_pk. Please specify one with --split-by or perform a sequential import with '-m 1'.** as expected!
+
+To avoid this error use -m 1 as suggested.
+```
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table table_no_pk \
+     --target-dir sqoop/warehouse/no_pk \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+     -m 1
+```
+
+Another method to avoid this error is to use split-by command
+
 **split-by criteria**
 ```
 - Column should be indexed on which split-by is performend. (for performance)
@@ -270,18 +335,33 @@ When -m 1 is used the data is imported sequentially.
 - The column should not have null values
 ```
 
-**10. Use split-by to import data from a table without PK**
-
+```
 sqoop import \
-    --connect jdbc:mysql://my.server.com:3306/my_database   \
-    --username user     \
-    -P         \
-    --table table_without_PK    \
-    --warehouse-dir <dir>       \
-    --split-by orders_id
-
-**11. Use split-by on a non numberic column**
-
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table table_no_pk \
+     --target-dir sqoop/warehouse/no_pk \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+     --split-by customer_id
+```
+**Now try using split-by on non numeric column**
+**11. Use split-by on a non numeric column**
+```
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table table_no_pk \
+     --delete-target-dir \
+     --target-dir sqoop/warehouse/no_pk \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+     --split-by customer_fname
+```
 sqoop import \
     --connect jdbc:mysq://my.server.com:3306/my_database    \
     --username user     \
@@ -377,7 +457,7 @@ sqoop import    \
 We compress data due to
 ```
 - Easy IO operation
-- Contain the seze of the files
+- Contain/reduce the size of the files
 - Reduce the storage requirements of the storage capacity
 - Due to replication factor we need 3x of storage space by default
 ```
@@ -415,11 +495,11 @@ sqoop import \
 
 **Note: To get all the availabe compression formats navigate to**
 
-cd etc/hadoop/conf
+**cd etc/hadoop/conf
 
-cat core-site.xml
+cat core-site.xml**
 
-Search for the line with codec
+Search for the line with **codec**
 and check to the values\formats enabled
 
 ----
@@ -442,6 +522,37 @@ sqoop import \
     --compress      \
     --boundary-query "select min(order_item_id), max(order_item_id) from order_items where order_items_id > 9999"
 ```
+
+```
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table orders \
+     --delete-target-dir \
+     --target-dir sqoop/warehouse/partial_orders \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+     **--boundary-query "select min(order_id),max(order_id) from orders where order_id >=30000";**
+```
+
+**Note: Same task can be achieved with the following commands**
+```
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table orders \
+     --columns order_id \
+     **--where "order_id>30000" \**
+     --delete-target-dir \
+     --target-dir sqoop/warehouse/partial_orders \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec 
+```
+
 ----
 
 **Boundary query for Transformations and Filtering on**
@@ -460,9 +571,24 @@ sqoop import \
     --username user \
     --password pwd  \
     --warehouse-dir <dir> \
-    --column orders_id, first_name  \
-    --compress
+    --columns orders_id, first_name  \
+    --compress \
     --num-mappers 2
+```
+
+```
+sqoop import \
+     --connect jdbc:mysql://localhost:3306/retail_db \
+     --username root \
+     --password cloudera \
+     --table orders \
+     --columns order_id \
+     --where "order_id>30000" \
+     --delete-target-dir \
+     --target-dir sqoop/warehouse/partial_orders \
+     --as-textfile \
+     -z \
+     --compression-codec org.apache.hadoop.io.compress.SnappyCodec 
 ```
 **21. Import data from multiple tables and specific columns**
 
@@ -470,10 +596,6 @@ sqoop import \
 - We cannot use --table
 - We cannot use --column
 - we have to use --split-by or use num-mappers only 1
-
-
-    
-
 
 
 
