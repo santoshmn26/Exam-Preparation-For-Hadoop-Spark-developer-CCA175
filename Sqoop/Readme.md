@@ -75,7 +75,13 @@ and so on..
 | **19. Import data as text file and compress with specific bounding query** |
 | **20. Import data from specific columns** |
 | **21. Import data from multiple tables and specific columns** |
-| **21. Import data from multiple tables and specific columns** |
+| **21. ** |
+| **22. Import data from multiple column from a single table** |
+| **23. import data from multiple tables and multiple column** |
+| **24. Using autoreset-to-one-mapper** |
+| **25. Manage NULL values while importing** |
+| **26. Change delimiter to ASCII NULL "\000" which is "^@"*** |
+
 ----
 
 Alias for tags
@@ -179,6 +185,7 @@ sqoop eval \
 **4. Import table new_table to warehouse-dir**
 
 **Note: Default mappers: 4**
+
 **Note: If target-dir and warehouse-dir not passed then by defalut the imported data is stored in the home path of hdfs. i.e /table_name
 --num-mappers or -m decide how many mappers are used for importing data
 ```
@@ -627,12 +634,125 @@ sqoop import \
      -z \
      --compression-codec org.apache.hadoop.io.compress.SnappyCodec 
 ```
-**21. Import data from multiple tables and specific columns**
+----
+**21. **
 
-**Note: When using --query tag:**
-- We cannot use --table
-- We cannot use --column
-- we have to use --split-by or use num-mappers only 1
+**Note:**
+``` 
+1. Table: Import entire table 
+2. column: Import all rows but perticular column
+3. query: Perform any transformation on data
+```
+The tags column and table should not be used along with query.
+
+Table and/or column is mutually exclusive with query.
+
+**22. Import data from multiple column from a single table**
+
+```
+sqoop import \
+    --connect jdbc:mysql/localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --delete-target-dir \
+    --target-dir sqoop/warehouse/column_data \
+    --table orders \
+    --columns col1,col2,col3 \
+    --num-mappers 2 
+```
+----
+**Note: Even though we have specified only few columns to import, the generated sql imports * to get the metadata about all columns.**
+
+**23. import data from multiple tables and multiple column**
+
+There are two was to achieve this
+```
+1. Use both table (specify all the table) and column (specify all the columns from the tables)
+2. Use a query and perform join operation and pass a split-by tag when m > 1.
+```
+
+Using query to perform join operation:
+
+**When we are importing data from multiple table we cannot use warehouse dir, because when we use warehouse-dir a folder which a table name is created
+but we are trying to import data from multiple table. There for we need to use target-dir.**
+
+**When we use a query tag we must all pass a \$CONDITION. Which is nothing but a place holder**
+
+```
+sqoop import \
+    --connect jdbc:mysql/localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --delete-target-dir \
+    --target-dir sqoop/warehouse/column_data \
+    --query " " \
+    --split-by \
+    -m 2 \
+    --split-by order_id
+```
+----
+
+**24. Using autoreset-to-one-mapper**
+
+This tag will come in handy when are importing data from 100's of table from a database where **some of the table might not have any primary key.**
+
+As we know already, when there is no PK we have to pass a split-by or use -m 1.
+
+Another work around would be to use autoreset-to-one-mapper where the code automatically activates m to 1 when there is no PK.
+
+```
+sqoop import \
+    --connect jdbc:mysql/localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --delete-target-dir \
+    --table table_no_pk \
+    --target-dir sqoop/warehouse/column_data \
+    --autoreset-to-one-mapper
+```
+----
+
+**Managing Null values and Delimiters**
+
+**25. Manage NULL values while importing**
+
+```
+1. For string values:       --null-string <null-string>
+2. For non-string values:   --null-non-string <null-string>
+```
+
+```
+sqoop import \
+    --connect jdbc:mysql/localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table orders \
+    --warehouse-dir sqoop/warehouse/tab_terminated_data \
+    --null-non-string -1 \
+    --null-string "empty" \
+    --fields-terminated-by "\t" \
+    --lines-terminated-by "\n" \
+    --m 2
+```
+
+**26. Change delimiter to ASCII NULL "\000" which is "^@"***
+```
+sqoop import \
+    --connect jdbc:mysql/localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table orders \
+    --warehouse-dir sqoop/warehouse/tab_terminated_data \
+    --null-non-string -1 \
+    --null-string "empty" \
+    --fields-terminated-by "\000" \
+    --lines-terminated-by "\n" \
+    --m 2
+```
+----
+
+
+
 
 
 
