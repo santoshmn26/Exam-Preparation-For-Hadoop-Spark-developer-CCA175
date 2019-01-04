@@ -103,6 +103,14 @@ Alias for tags
 | as-parquetfile | - | - | import / export data in Binary Colomnar format |
 | split-by | - | - | split the data into multiple files based on a specified colomn |
 | colomn | - | - | specify the column to be imported |
+| --autoreset-to-one-mapper | - | - | resets to one mapper if PK and split-by is not present |
+| --null-string | - | - | Replace a null value of a type string to a desired value |
+| --null-non-string | - | - | Replace a null value of a type numeric to a desired value |
+| --fields-terminated-by | - | - | Change the delimiter |
+| --lines-terminated-by | - | - | Change the new line character |
+| --enclosed-by | - | - | Change the enclosing character |
+| --escaped-by | - | - | Change the escape character |
+| --optionally-enclosed-by | - | - | Change the enclosing char when the value is same as the delimiter|
 
 
 
