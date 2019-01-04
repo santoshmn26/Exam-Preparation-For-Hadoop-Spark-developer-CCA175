@@ -2,30 +2,37 @@
 
 Latest available version 2
 
-**Popular version among developers 1.4.6**
+**Stable/Most popular version among developers 1.4.6**
 
 Sqoop is mainly used for automation of importing and exporting data.
 ----
 
 ### Life cycle of sqoop command
 
-**In the first step, a SQL query is generated and execute to understand the data by fetching just one record to access the meta-data information of the columns.**
+**In the first step, a SQL query is generated and executed to understand the data by fetching just one record to access the meta-data information of the columns.**
 sample query
 ```
 select * from sample_table limit 1
 ```
-**Next a java file is generated, which is a map-reduce.**
+Executing the above query returns just 1 record which is sufficient to get the **metadata information about the fields in the source database.**
+
+**Next a java file is generated, which is a nothing but a map-reduce program.**
+
+The total number of java files generated dependes on the number tables imported.
+
 For each table being imported a .java file is created using the columns metadata.
 
-**Next the .java file/files are complied to generate the jar file/files.**
-This jar file is executed to start the import process
-
 **The Boundry query is executed to determine total number of records.**
+
 Data split into mutually exclusive records based on Boundry query and num-mappers
 
-**By default 4 mappers are used, i.e 4 threads to import the data from the source**
-> More threads = faster the import process = Causes more load on the source database
+**Next the .java file/files are complied to generate the jar file/files.**
 
+This jar file is executed to start the import process
+
+**By default 4 mappers are used, i.e 4 threads to import the data from the source**
+
+> In theory More threads = faster the import process but it Causes more load on the source database which is not recomended
 ----
 
 **Note:**
@@ -33,7 +40,12 @@ Data split into mutually exclusive records based on Boundry query and num-mapper
 - \ - line break
 - 3306 default port for access RDBMS can be omitted 
 
-**Note: Number of mappers used = Number of files generated.**
+**Note: Number of mappers used = Number of files generated in the output directory.**
+```
+-   part-m-00000
+-   part-m-00001
+and so on..
+```
 
 **Note: When -m 1 (Only one mapper is used) is used sqoop does not execute its Boundry query, since there is no need to split the data into files.**
 
@@ -118,7 +130,7 @@ sqoop eval \
     -P  \
     --query "insert into order values (100,\"2018-10-31\",100,'adb')"
 ```
-**Note: user need access to write data!**
+**Note: user need access to write data! Make sure that the user information provided has access to make changes to the DB**
 
 **sqoop eval with DDL command**
 ```
