@@ -84,11 +84,28 @@ Alias for tags
 | ------- | ------- | ------- | ----------- |
 | sqoop-help | sqoop help | - | List all commands for sqoop |
 | version | - | - | Display the version of the sqoop installed |
+| username | - | - | Name of the user trying to access data |
 | --Password | -P | --password-file | Password for connecting to the database |
 | sqoop-list-database | sqoop list-databases | - | List all the database in source |
 | --num-mappers | -m | - | Configuring the number of mappers |
 | --query | -e | - | Query tag |
 | -z | --compress | - | Enable\Disable compression |
+| list-tables | sqoop-list-tables | - | List all the tables in the database |
+| import | - | - | import data |
+| connect | - | - | Connection string with a jdbc |
+| warehouse-dir | - | - | path where the output files needs to be generated |
+| target-dir | - | - | path with a new folder name where the o/p files needs to be generated |
+| table | - | - | tables to be imported / exported |
+| delete-target-dir | - | - | Delete target dir if present |
+| as-textfile | - | - | import / export data in textfile format |
+| as-avrodata | - | - | import / export data in Binary JSON format |
+| as-sequence | - | - | import / export data in Binary format |
+| as-parquetfile | - | - | import / export data in Binary Colomnar format |
+| split-by | - | - | split the data into multiple files based on a specified colomn |
+| colomn | - | - | specify the column to be imported |
+
+
+
 
 ----
 
