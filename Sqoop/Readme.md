@@ -1,5 +1,6 @@
 # Sqoop v1.4.6
 ![alt text](https://github.com/santoshmn26/CCA175-Hadoop-Spark-developer/blob/master/Sqoop/sqoop.png)
+
 Latest available version 2
 
 **Stable/Most popular version among developers 1.4.6**
