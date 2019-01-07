@@ -48,9 +48,13 @@ and so on..
 ```
 
 **Note: When -m 1 (Only one mapper is used) is used sqoop does not execute its Boundry query, since there is no need to split the data into files.**
+
 **Note: When importing data from multiple columns, there should not be any empty space between the column names supplied**
+
 **Note: When -m 1 is used the data is imported sequentially.**
-**Note: In case we use both --split-by and -m parameters the priority is given to -m parameter**
+
+**Note: While importing data the column passed in split-by must also be imported**
+
 ----
 | **Sqoop commands list** |
 | ------------------- |
@@ -82,10 +86,18 @@ and so on..
 | **25. Manage NULL values while importing** |
 | **26. Change delimiter to ASCII NULL "\000" which is "^@"*** |
 | **27. Import data of type date using query*.** |
+| **28. Incremental Imports using query and append** |
+| **29. Using where parameter with append** |
+| **30. Import data using sqoop's incremental append** |
+| **31. Import a table into hive using sqoop** |
+
+
+
+
 
 ----
 
-Alias for tags
+**Usefull Sqoop commands for CCA175 certification**
 
 | Command | Alias-1 | Alias-2 | Description |
 | ------- | ------- | ------- | ----------- |
@@ -118,6 +130,12 @@ Alias for tags
 | --enclosed-by | - | - | Change the enclosing character |
 | --escaped-by | - | - | Change the escape character |
 | --optionally-enclosed-by | - | - | Change the enclosing char when the value is same as the delimiter |
+| --check-column | - | - | Used for incremental append, Column to be verified for the latest value |
+| --incremental <mode> | - | - | Mode for incremental update of data |
+| --last-value | - | - | latest value updated/inserted into the HDFS |
+| --hive-import | - | - | enable import data into hive data store |
+| --hive-database | - | - | Define the database to which the table needs to be copied |
+| --hive-table | - | - | Name of the table to be created in HIVE to upload the imported data |    
 
 
 
@@ -222,27 +240,42 @@ sqoop import \
 ### Difference between target-dir and warehouse-dir:
 
 - --target-dir <dir> HDFS destination dir, No sub directory created all the imported files are imported to specified <dir>
+    
 - --warehouse-dir <dir> sub dir created with table name and that dir contains data files
 
 - In simple terms:
+
 1. If target-dir is used we can specify the name of the output directory under which four part-m files are created
+   
    ex: when we use target-dir sqoop/warehouse/output
+   
        **The output is stored at sqoop/warehouse/output/**
+       
        Now if we execute **hadoop fs -ls sqoop/warehouse/output** we get four files
-       part-m-00001
-       part-m-00002
-       part-m-00003
-       part-m-00004
+       
+       - part-m-00001
+       - part-m-00002
+       - part-m-00003
+       - part-m-00004
+       
 2. If warehouse-dir is use a sub dir is created with the name of the table under which the the part-m files are created
+
    ex: when we use warehouse-dir sqoop/warehouse/output
-       **The output files are stored under a newely created dir that with the table name
+   
+   
+   **The output files are stored under a newely created dir that with the table name
+   
        i.e **sqoop/warehouse/output/table_name**
+       
        Now to check the output file we need to execute
+       
        **hadoop fs -ls sqoop/warehouse/output/table_name** we get
-       part-m-00001
-       part-m-00002
-       part-m-00003
-       part-m-00004       
+       
+       - part-m-00001
+       - part-m-00002
+       - part-m-00003
+       - part-m-00004       
+
        **table_name is the new dir that is created.**
 
 
@@ -786,9 +819,130 @@ sqoop import \
 ----
 
 **27. Import data of type date using query**
+
 **NEEDS UPDATE**
 
 ----
+ **Incremental Imports**
+ 
+**28. Incremental Imports using query and append**
+
+**First load all the data for the year 2013**
+
+**It is pointless to use delete-target-dir with append**
+
+```
+sqoop import \
+    --connect jdbc:mysql://localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --target-dir sqoop/warehouse/append \
+    -z \
+    --as-textfile \
+    --query "select order_date from orders where order_date like '2013-%' and \$CONDITIONS' \
+    -m 1
+```
+**Now assume that there is a new data added to the source database with the year 2014. By using --append we can append the new data to the old files.**
+```
+sqoop import \
+    --connect jdbc:mysql://localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --target-dir sqoop/warehouse/append \
+    --append \
+    -z \
+    --as-textfile \
+    --query "select order_date from orders where order_date like '2013-%' and \$CONDITIONS' \
+    -m 1
+```
+**Using query and split-by is not recomended for loading data frequently or large amount of data on of the work around method is to use where parameter.**
+
+**29. Using where parameter with append**
+```
+sqoop import \
+    --connect jdbc:mysql://localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table orders \
+    --column orders_data \
+    --where "orders_date like '2013%'" \
+    -z \
+    --as-textfile \
+    -m 1
+```
+**While performing data import for appending, there are few Problems with using where or query parameters**
+
+- We need to keep track of the latest imported rows in the destination.
+- We need to keep track of the latest rows updated in the source database.
+- To perform the above two operation we need to perform eval before and after importing data from the source.
+
+**To overcome all the above problems we can use:**
+```
+1. check-column
+2. Incremental
+3. last-value
+```
+**30. Import data using sqoop's incremental append**
+
+**Example: Let us first import order data for the year 2013**
+```
+sqoop import \
+    --connect jdbc:mysql://localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --target-dir sqoop/warehouse/append \
+    --append \
+    -z \
+    --as-textfile \
+    --query "select order_id, order_date from orders where order_date like '2013-%' and \$CONDITIONS' \
+    --split-by order_id
+```
+**Run the following command to check the latest value in the hdfs for orders table**
+```
+hadoop fs -cat /sqoop/warehouse/append/part-m-00003 | tail 
+```
+**Now copy the latest value with the latest date.**
+
+**Now assume the data at the source database orders has increased with data for 2014, let us use sqoop's incremental append to upload the new data into HDFS.**
+
+**Paste the latest value copied to the last-value parameter.**
+```
+sqoop import \
+    --connect jdbc:mysql://localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --target-dir sqoop/warehouse/append \
+    --table orders \
+    --columns order_id,order_date \
+    --check-column order_date \
+    --incremental append \
+    --last-value "2013-10-31"
+```
+
+----
+
+## HIVE and SQOOP
+
+**Importing data into hive using sqoop**
+
+**31. Import a table into hive using sqoop**
+```
+sqoop import \
+    --connect jdbc:mysql://localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table order_items \
+    --hive-import \
+    --hive-database retail_db \
+    --hive-table hive_order_items;
+    --num-mappers 2
+```
+**Note: --hive-table is optional, if the paramater is not passed a by default the table's original name from the source is used to create the table in the hive database**
+
+**Note: --hive-database is also optional we can directly pass hive-table retail_db.order_items**
+
+**Note: If the database name is not passed by defalut the data is uploaded to the default database in hive.**
+
 
 
 
