@@ -90,6 +90,7 @@ and so on..
 | **29. Using where parameter with append** |
 | **30. Import data using sqoop's incremental append** |
 | **31. Import a table into hive using sqoop** |
+| **32. Using hive-overwrite to overwrite existing data in hive tables** |
 
 
 
@@ -136,7 +137,7 @@ and so on..
 | --hive-import | - | - | enable import data into hive data store |
 | --hive-database | - | - | Define the database to which the table needs to be copied |
 | --hive-table | - | - | Name of the table to be created in HIVE to upload the imported data |    
-
+| --hive-overwrite | - | - | Overwrite existing data in hive |
 
 
 
@@ -934,7 +935,7 @@ sqoop import \
     --table order_items \
     --hive-import \
     --hive-database retail_db \
-    --hive-table hive_order_items;
+    --hive-table hive_order_items \
     --num-mappers 2
 ```
 **Note: --hive-table is optional, if the paramater is not passed a by default the table's original name from the source is used to create the table in the hive database**
@@ -943,7 +944,29 @@ sqoop import \
 
 **Note: If the database name is not passed by defalut the data is uploaded to the default database in hive.**
 
+**Three senarios that can happen during hive import**
+```
+1. Table that we are trying to import already exists in HIVE.
+When we try and import the table again, we do not get any error, the import will run successfully and create more part-m-files in the same directory.
+2. We know that the table already exists so we use --hive-overwrite to overwrite the existing data in the hive instead of making copies
+When we pass the parameter --hive-overwrite the table in the hive is dropped and recreated so are the files in the HDFS.
+3. We know that the table already exists so, we try to append new data into the hive table
+```
+**For senario 2**
 
+**32. Using hive-overwrite to overwrite existing data in hive tables**
+```
+sqoop import \
+    --connect jdbc:mysql://localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table order_items \
+    --hive-import \
+    --hive-database retail_db \
+    --hive-table hive_order_items \ 
+    --hive-overwrite \
+    --num-mappers 2
+```
 
 
 
