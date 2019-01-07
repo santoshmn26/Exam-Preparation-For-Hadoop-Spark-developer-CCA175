@@ -48,9 +48,9 @@ and so on..
 ```
 
 **Note: When -m 1 (Only one mapper is used) is used sqoop does not execute its Boundry query, since there is no need to split the data into files.**
-
+**Note: When importing data from multiple columns, there should not be any empty space between the column names supplied**
 **Note: When -m 1 is used the data is imported sequentially.**
-
+**Note: In case we use both --split-by and -m parameters the priority is given to -m parameter**
 ----
 | **Sqoop commands list** |
 | ------------------- |
@@ -81,6 +81,7 @@ and so on..
 | **24. Using autoreset-to-one-mapper** |
 | **25. Manage NULL values while importing** |
 | **26. Change delimiter to ASCII NULL "\000" which is "^@"*** |
+| **27. Import data of type date using query*.** |
 
 ----
 
@@ -116,7 +117,7 @@ Alias for tags
 | --lines-terminated-by | - | - | Change the new line character |
 | --enclosed-by | - | - | Change the enclosing character |
 | --escaped-by | - | - | Change the escape character |
-| --optionally-enclosed-by | - | - | Change the enclosing char when the value is same as the delimiter|
+| --optionally-enclosed-by | - | - | Change the enclosing char when the value is same as the delimiter |
 
 
 
@@ -608,6 +609,9 @@ We can use --column tag to specify the columns that we need  to import.
 we can use --Query tag to filter the data from the table and import the data.
 
 **20. Import data from specific columns**
+**Note: When importing data from multiple columns, there should not be any empty space between the column names supplied**
+**Invalid syntax: --columns col1, col2, col3**
+**Correct syntax: --columns col1,col2,col3**
 
 ```
 sqoop import \
@@ -615,7 +619,7 @@ sqoop import \
     --username user \
     --password pwd  \
     --warehouse-dir <dir> \
-    --columns orders_id, first_name  \
+    --columns orders_id,first_name  \
     --compress \
     --num-mappers 2
 ```
@@ -626,7 +630,7 @@ sqoop import \
      --username root \
      --password cloudera \
      --table orders \
-     --columns order_id \
+     --columns order_id,order_status \
      --where "order_id>30000" \
      --delete-target-dir \
      --target-dir sqoop/warehouse/partial_orders \
@@ -637,13 +641,14 @@ sqoop import \
 ----
 **21. **
 
-**Note:**
+**Note: Parameters and their uses**
+
 ``` 
 1. Table: Import entire table 
 2. column: Import all rows but perticular column
 3. query: Perform any transformation on data
 ```
-The tags column and table should not be used along with query.
+The tags column and/or table should not be used along with query.
 
 Table and/or column is mutually exclusive with query.
 
@@ -660,6 +665,21 @@ sqoop import \
     --columns col1,col2,col3 \
     --num-mappers 2 
 ```
+
+**Note: whenever we use column we must use the table parameter**
+```
+sqoop import \
+    --connect jdbc:mysql://localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --delete-target-dir \
+    --target-dir sqoop/warehouse/joing \
+    -z \
+    --as-textfile \
+    --table orders \
+    --columns order_id,order_status \
+    -m 1
+``` 
 ----
 **Note: Even though we have specified only few columns to import, the generated sql imports * to get the metadata about all columns.**
 
@@ -690,6 +710,20 @@ sqoop import \
     -m 2 \
     --split-by order_id
 ```
+**Note: Either use split-by or use m 1 when query parameter is used**
+```
+sqoop import \
+    --connect jdbc:mysql/localhost:3306/retail_db \
+    --username root \
+    --password cloudera \
+    --delete-target-dir \
+    --target-dir \
+    -z \
+    --as-textfile \
+    --query 'select o.order_id, o.order_status, oi.order_item_id from orders o join order_items oi on o.order_id = oi.order_item_id where $CONDITIONS' \
+    --split-by order_id
+```
+
 ----
 
 **24. Using autoreset-to-one-mapper**
@@ -751,6 +785,10 @@ sqoop import \
 ```
 ----
 
+**27. Import data of type date using query**
+**NEEDS UPDATE**
+
+----
 
 
 
