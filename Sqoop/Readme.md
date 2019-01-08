@@ -1,35 +1,51 @@
 # Sqoop v1.4.6
 ![alt text](https://github.com/santoshmn26/CCA175-Hadoop-Spark-developer/blob/master/Sqoop/sqoop.png)
 
-Latest available version 2
+Latest available version for sqoop 1 is 1.4.7
+Latest available version for sqoop 2 is 1.99.7
 
-**Stable/Most popular version among developers 1.4.6**
+**Stable/Most popular version among developers is 1.4.6**
 
 Sqoop is mainly used for automation of importing and exporting data.
 ----
 
 ### Life cycle of sqoop command
+### Assume that we are executing the following sqoop command
+```
+sqoop import \
+    --connect jdbc:mysql://localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table orders
+```
+### Steps:
 
-**In the first step, a SQL query is generated and executed to understand the data by fetching just one record to access the meta-data information of the columns.**
-sample query
+1. A SQL query is generated
+
+2. Next step the generated SQL is executed
+
+**Note: The first two steps are performed to understand the data by fetching just one record to access the meta-data information of the columns.**
+sample generated query
 ```
 select * from sample_table limit 1
 ```
 Executing the above query returns just 1 record which is sufficient to get the **metadata information about the fields in the source database.**
 
-**Next a java file is generated, which is a nothing but a map-reduce program.**
-
-The total number of java files generated dependes on the number tables imported.
+3. Next a java file is generated, which is a nothing but a map-reduce program.
 
 For each table being imported a .java file is created using the columns metadata.
 
-**The Boundry query is executed to determine total number of records.**
+**Note: The total number of java files generated dependes on the number tables imported.**
 
-Data split into mutually exclusive records based on Boundry query and num-mappers
+4. A Boundry query is generated
+
+**The Boundry query is executed to determine total number of records needs to be imported.**
+
+5. Data split into mutually exclusive records based on Boundry query and num-mappers
 
 **Next the .java file/files are complied to generate the jar file/files.**
 
-This jar file is executed to start the import process
+6. This jar file is executed to start the import process
 
 **By default 4 mappers are used, i.e 4 threads to import the data from the source**
 
@@ -38,8 +54,9 @@ This jar file is executed to start the import process
 
 **Note:**
 
-- \ - line break
-- 3306 default port for access RDBMS can be omitted 
+- \ - line break.
+- 3306 default port for access RDBMS can be omitted. 
+- Only mappers operations are performed for sqoop. Hence part-m files are generated in the output.
 
 **Note: Number of mappers used = Number of files generated in the output directory.**
 ```
