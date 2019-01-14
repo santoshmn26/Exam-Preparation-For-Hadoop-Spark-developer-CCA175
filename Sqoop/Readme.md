@@ -109,6 +109,9 @@ and so on..
 | **30. Import data using sqoop's incremental append** |
 | **31. Import a table into hive using sqoop** |
 | **32. Using hive-overwrite to overwrite existing data in hive tables** |
+| **33. Default behaviour of hive import if a table already exists the append the data, copy of part-m files are created** |
+| **34. Using hive-create-table. *** |
+| **35. Using import-all** |
 
 
 
@@ -960,6 +963,8 @@ sqoop import \
 
 **Note: --hive-database is also optional we can directly pass hive-table retail_db.order_items**
 
+**Note if we --hive-database is not provided and the database name is not provided in --hive-table then the data is loaded into the default database in hive that is 'default'**
+
 **Note: If the database name is not passed by defalut the data is uploaded to the default database in hive.**
 
 **Three senarios that can happen during hive import**
@@ -970,6 +975,7 @@ When we try and import the table again, we do not get any error, the import will
 When we pass the parameter --hive-overwrite the table in the hive is dropped and recreated so are the files in the HDFS.
 3. We know that the table already exists so, we try to append new data into the hive table
 ```
+
 **For senario 2**
 
 **32. Using hive-overwrite to overwrite existing data in hive tables**
@@ -985,6 +991,76 @@ sqoop import \
     --hive-overwrite \
     --num-mappers 2
 ```
+**For senario 1**
+
+**33. Default behaviour of hive import if a table already exists the append the data, copy of part-m files are created**
+
+```
+sqoop import \
+    --connect jdbc:mysql://localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table order_items \
+    --hive-import \
+    --hive-database retail_db \
+    --hive-table hive_order_items \
+    --num-mappers 2
+```
+
+**For senario 3**
+
+**Note: hive-create-table and hive-overwwite are mutually exclusive, Not recommended to use both**
+
+**Note: hive-create-table does not work as the name suggest.**
+
+**It throws an exception or fail if the target table already exists**
+Even before failing the data from the source is loaded into a staging table in hdfs default user location.
+
+So, if the job fails there is still data present in hdfs which we may have to handle.
+
+**34. Using hive-create-table. ***
+
+```
+sqoop import \
+    --connect jdbc:mysql://localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --table order_items \
+    --hive-import \
+    --hive-create-table \
+    --hive-database retail_db \
+    --hive-table hive_order_items \
+    --num-mappers 2
+```
+
+**Hive import-all tables**
+
+**Note: when we use import-all-tables we cannot use the following. i.e we cannot perform any transformation on the data.**
+```
+1. --query
+2. --table
+3. --where
+4. --target-dir
+5. --columns
+```
+
+**35. Using import-all**
+**Recommended to use --autoreset-to-one-mapper **
+```
+sqoop import-all-tables \
+    --connect jdbc:mysql://localhost/retail_db \
+    --username root \
+    --password cloudera \
+    --autoreset-to-one-mapper \
+    --warehouse-dir user/hive/warehouse 
+```
+
+----
+
+## Sqoop Export
+
+
+
 
 
 
