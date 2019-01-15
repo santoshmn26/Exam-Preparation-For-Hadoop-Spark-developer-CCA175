@@ -102,16 +102,17 @@ and so on..
 | **23. import data from multiple tables and multiple column** |
 | **24. Using autoreset-to-one-mapper** |
 | **25. Manage NULL values while importing** |
-| **26. Change delimiter to ASCII NULL "\000" which is "^@"*** |
-| **27. Import data of type date using query*.** |
+| **26. Change delimiter to ASCII NULL "\000" which is "^@"** |
+| **27. Import data of type date using query.** |
 | **28. Incremental Imports using query and append** |
 | **29. Using where parameter with append** |
 | **30. Import data using sqoop's incremental append** |
 | **31. Import a table into hive using sqoop** |
 | **32. Using hive-overwrite to overwrite existing data in hive tables** |
 | **33. Default behaviour of hive import if a table already exists the append the data, copy of part-m files are created** |
-| **34. Using hive-create-table. *** |
-| **35. Using import-all** |
+| **34. Using hive-create-table.** |
+| **35. Using import-all-tables** |
+| **36. Simple export** |
 
 
 
@@ -159,6 +160,8 @@ and so on..
 | --hive-database | - | - | Define the database to which the table needs to be copied |
 | --hive-table | - | - | Name of the table to be created in HIVE to upload the imported data |    
 | --hive-overwrite | - | - | Overwrite existing data in hive |
+| --export-dir | - | - | Location of dir in hdfs with data to be exported |
+    
 
 
 
@@ -1044,7 +1047,20 @@ sqoop import \
 5. --columns
 ```
 
-**35. Using import-all**
+**35. Using import-all-tables**
+
+**Note: Passing --hive-import is mandatory or all the data is just loaded into hdfs and not in hive table**
+
+**Note: To confirm that the data is loaded into HIVE and not just in hdfs, view the content of part-m files in hdfs, the delimited should be '^@' and not ','.**
+
+**Note: If a warehouse-dir not passed during import then the default /user/hive/warehouse/ stored all the imported tables. To verify the default hive/warehouse location if changed in conf files go to hive and type**
+
+> describe formated table_name 
+
+To get additional information about the table scroll down to find the Location column copy the path and verify by 
+
+> hadoop fs -ls copied_path.
+
 **Recommended to use --autoreset-to-one-mapper **
 ```
 sqoop import-all-tables \
@@ -1052,12 +1068,67 @@ sqoop import-all-tables \
     --username root \
     --password cloudera \
     --autoreset-to-one-mapper \
-    --warehouse-dir user/hive/warehouse 
+    --hive-import
 ```
 
 ----
 
 ## Sqoop Export
+
+**While exporting make sure that the target database has write permission to the user to write the data from hdfs to target database.** 
+
+**Note: While importing data from mysql to hive if the table does not exist in the hive a new table is created with the name obtained from the target dir. We do not get any error**
+
+**Note: The same does not apply the other way around. While importing data from hdfs to target (mysql) if a table does not exist in the traget (mysql) we get an error as table not found.**
+
+## Steps to follow during import:
+
+> First step during export make sure that a table exist in the target database.
+> Make sure that the user has access to write data into the targe database.
+> Data stored in hdfs is noting but a directory, similar to data stored in hive so, while exporting we need to provide the export-dir
+
+**36. Simple export**
+
+**Note: The table name orders provided by --table refers to the table name in the target dir and not in the source dir. In the source we do not have a table we have a dir.**
+
+**Note: When we export data from hive to target dir remember that the delimited should match between the source and target and the default demilited for hive is "\001" which is the ascii code for '^@'**
+
+
+```
+sqoop export \
+    --connect jdbc:mysql://localhost/retail_export \
+    --username root \
+    --password cloudera \
+    --table ordres \
+    --export-dir /user/hive/warehouse/orders \
+    --fields-terminated-by "\001" \
+    --lines-terminated-by "\n"
+```
+
+## Life cycle of Export
+
+> Similary to import, during export the first step is to get the meta data. 
+
+This is achieved by generating and executing a SQL to retrive just 1 record from the target database.
+
+> Once the SQL is executed jar files are generated. 
+
+The number of jar files generated depends on the number of tables being exported similar to the import process.
+
+> Service address created
+
+A service link is generated to track the import process.
+
+These jar files are injected into sqoop to start the export process
+
+> NO BOUNDRY QUERY IS GENERATED!. But insted the sqoop uses hadoop internal block sizes to determine how to split the data between number of mappers.
+
+
+## Export column mapping.
+
+!!Update last 3
+
+
 
 
 
