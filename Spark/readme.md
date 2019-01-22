@@ -1,3 +1,6 @@
+# Spark 1.6.0
+
+
 | Transformation | Meaning |
 | -------------- | ------- |
 | map(func)	| Return a new distributed dataset formed by passing each element of the source through a function func. |
@@ -23,7 +26,9 @@
 
 
 > Note: If you are grouping in order to perform an aggregation (such as a sum or average) over each key, using reduceByKey or aggregateByKey will yield much better performance. 
+
 > Note: By default, the level of parallelism in the output depends on the number of partitions of the parent RDD. You can pass an optional numTasks argument to set a different number of tasks.
+
 > Note: DataFrame (DF): also known as RDD with a Data structure associated with it.
 
 
@@ -51,17 +56,20 @@ type(orders_rdd)
 ### File type for reading data 
 
 > text
+
 > parquet
+
 > orc
+
 > json
 
 ### 3. Using sqlContext.load() and sqlContext.read()
 
-### sqlContext.load("path",format)
+**sqlContext.load("path",format)**
 ```
 sqlContext.load("/user/cloudera/spark/orders/*",json)
 ```
-### sqlContext.load.format()
+**sqlContext.load.format()**
 ```
 sqlContext.read.json("/user/cloudera/spark/orders/*")
 ```
