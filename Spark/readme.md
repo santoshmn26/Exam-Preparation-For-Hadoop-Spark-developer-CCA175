@@ -27,7 +27,7 @@
 | repartitionAndSortWithinPartitions(partitioner)	| Repartition the RDD according to the given partitioner and, within each resulting partition, sort records by their keys. This is more efficient than calling repartition and then sorting within each partition because it can push the sorting down into the shuffle machinery. |
 
 
-| Command | File type | Description | 
+| Command | File | Description | 
 | ------- | --------- | ----------- |
 | textFile() | RDD | Create a rdd file from a file present in HDFS, path of the file is passed as args. | 
 | collect() | RDD/DF | Displays the entire content of the rdd_file/DF. CAUTION while using this can cause huge load since the files are large. |
