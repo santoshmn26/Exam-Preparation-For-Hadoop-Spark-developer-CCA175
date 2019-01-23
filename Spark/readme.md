@@ -3,44 +3,30 @@
 ![alt text](https://github.com/santoshmn26/CCA175-Hadoop-Spark-developer/blob/master/Spark/download.png)
 
 
-| Transformation | Meaning |
-| -------------- | ------- |
-| map(func)	| Return a new distributed dataset formed by passing each element of the source through a function func. |
-| filter(func)	| Return a new dataset formed by selecting those elements of the source on which func returns true. |
-| flatMap(func)	| Similar to map, but each input item can be mapped to 0 or more output items (so func should return a Seq rather than a single item). |
-| mapPartitions(func)	| Similar to map, but runs separately on each partition (block) of the RDD, so func must be of type Iterator<T> => Iterator<U> when running on an RDD of type T. |
-| mapPartitionsWithIndex(func)	| Similar to mapPartitions, but also provides func with an integer value representing the index of the partition, so func must be of type (Int, Iterator<T>) => Iterator<U> when running on an RDD of type T. |
-| sample(withReplacement, fraction, seed) | Sample a fraction fraction of the data, with or without replacement, using a given random number generator seed. |
-| union(otherDataset)	| Return a new dataset that contains the union of the elements in the source dataset and the argument. |
-| intersection(otherDataset)	| Return a new RDD that contains the intersection of elements in the source dataset and the argument. |
-| distinct([numTasks]))	| Return a new dataset that contains the distinct elements of the source dataset. |
-| groupByKey([numTasks])	| When called on a dataset of (K, V) pairs, returns a dataset of (K, Iterable<V>) pairs.  |
-| reduceByKey(func, [numTasks]) | When called on a dataset of (K, V) pairs, returns a dataset of (K, V) pairs where the values for each key are aggregated using the given reduce function func, which must be of type (V,V) => V. Like in groupByKey, the number of reduce tasks is configurable through an optional second argument.
-| aggregateByKey(zeroValue)(seqOp, combOp, [numTasks]) | When called on a dataset of (K, V) pairs, returns a dataset of (K, U) pairs where the values for each key are aggregated using the given combine functions and a neutral "zero" value. Allows an aggregated value type that is different than the input value type, while avoiding unnecessary allocations. Like in groupByKey, the number of reduce tasks is configurable through an optional second argument.
-| sortByKey([ascending], [numTasks]) | When called on a dataset of (K, V) pairs where K implements Ordered, returns a dataset of (K, V) pairs sorted by keys in ascending or descending order, as specified in the boolean ascending argument.
-| join(otherDataset, [numTasks]) | When called on datasets of type (K, V) and (K, W), returns a dataset of (K, (V, W)) pairs with all pairs of elements for each key. Outer joins are supported through leftOuterJoin, rightOuterJoin, and fullOuterJoin.
-| cogroup(otherDataset, [numTasks]) | When called on datasets of type (K, V) and (K, W), returns a dataset of (K, (Iterable<V>, Iterable<W>)) tuples. This operation is also called groupWith.
-| cartesian(otherDataset)	| When called on datasets of types T and U, returns a dataset of (T, U) pairs (all pairs of elements). |
-| pipe(command, [envVars]) | Pipe each partition of the RDD through a shell command, e.g. a Perl or bash script. RDD elements are written to the process's stdin and lines output to its stdout are returned as an RDD of strings.
-| coalesce(numPartitions)	| Decrease the number of partitions in the RDD to numPartitions. Useful for running operations more efficiently after filtering down a large dataset. |
-| repartition(numPartitions)	| Reshuffle the data in the RDD randomly to create either more or fewer partitions and balance it across them. This always shuffles all data over the network. |
-| repartitionAndSortWithinPartitions(partitioner)	| Repartition the RDD according to the given partitioner and, within each resulting partition, sort records by their keys. This is more efficient than calling repartition and then sorting within each partition because it can push the sorting down into the shuffle machinery. |
 
 
-| Command | File | Description | 
+| Command | Files | Description | 
 | ------- | --------- | ----------- |
 | textFile() | RDD | Create a rdd file from a file present in HDFS, path of the file is passed as args. | 
-| collect() | RDD/DF | Displays the entire content of the rdd_file/DF. CAUTION while using this can cause huge load since the files are large. |
 | take(n) | RDD/DF | Displays/create a list of size n with the records from the rdd_file/DF. | 
 | first() | RDD/DF | Display the first element from the rdd_file/DF | 
-| **takeSample(rep,n,seed)** | **RDD** | **Returns a list of size n with random number records from the rdd_file. Seed is optional.** |
+| **takeSample(rep,n,seed)** | **RDD** | ***Returns a list of size n with random number records from the rdd_file.*** |
 | count() | RDD/DF | count the number of records in the rdd_file/DF | 
-| **show()** | **DF** | **Display pretty table of top 20 rows of a DF.** | 
-| **persist()** | **DF** | **Display column name and data type.** |
-| **columns** | **DF** | Display only column names.** |
+| **show()** | **DF** | ***Display pretty table of top 20 rows of a DF.*** | 
+| **persist()** | **DF** | ***Display column name and data type.*** |
+| **columns** | **DF** | ***Display only column names.*** |
+| collect() | RDD/DF | Displays the entire content of the rdd_file/DF. ***CAUTION while using this can cause huge load since the files are large.*** |
 | map() | | |
 | filter() | | |
-| flatMap() | | |
+| flatMap() | | Return a new dataset formed by selecting those elements of the source on which func returns true. |
+| reduceByKey() | | |
+| join() | RDD | Perform ***Inner*** join |
+| leftOuterJoin()| RDD | Perform ***left*** outer join |
+| rightOuterJoin()| RDD | Perform ***right*** outer join |
+| fullOuterJoin()| RDD | Perform ***full*** outer join |
+| distinct() | RDD | Get a list of all distinct values in a RDD |
+| countByKey() | RDD | Get a count of keys provides (K,V) returns (K,count(V))
+| sample(rep,fraction,seed) | RDD/DF | returns a fraction of sample. |   
 
 | No. | Examples |
 | --- |-------- |
@@ -48,7 +34,7 @@
 | 2. | Create a RDD from a local file |
 | 3. | Using sqlContext.load() and sqlContext.read() |
 | 4. | Using map() transformation function |
-| 5. |
+| 5. | Using filter() |
 | 6. | Create a Rdd from a file in hdfs |
 | 7. | Create a RDD from a file in local file system |
 | 8. | Word ocunt using flatMap(), map() and reduceByKey() |
@@ -63,6 +49,12 @@
 > Note: By default, the level of parallelism in the output depends on the number of partitions of the parent RDD. You can pass an optional numTasks argument to set a different number of tasks.
 
 > Note: DataFrame (DF): also known as RDD with a Data structure associated with it.
+
+> Note: countByKey() returns a python Dict and not a RDD. Not practical for large datasets. Use reduceByKey() or aggrigateByKey().
+
+> Note: countByKey() is a action not a transformation, where as reduceByKey() and aggrigateByKey() are transformations.
+
+> Note: CAUTION while using this can cause huge load since the files are large.
 
 
 ### 1. Creating RDD from a list
@@ -95,6 +87,7 @@ type(orders_rdd)
 > orc
 
 > json
+----
 
 ### 3. Using sqlContext.load() and sqlContext.read()
 
@@ -106,6 +99,7 @@ sqlContext.load("/user/cloudera/spark/orders/*",json)
 ```
 sqlContext.read.json("/user/cloudera/spark/orders/*")
 ```
+----
 
 ### 4. Using map() transformation function
 
@@ -117,6 +111,22 @@ Perform transformation in spark shell
 ```
 rdd_file.map(lambda x: x.split(",")[3]).first()
 ```
+----
+## 5. Using filter()
+
+Return a new dataset formed by selecting those elements of the source on which func returns true. 
+
+In this example lets get all the records from orders which have the status = 'CLOSED'
+```
+orders.take(2)
+[u'1,2013-07-25 00:00:00.0,11599,CLOSED', u'2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT']
+res = orders.filter(lambda x: x.split(',')[3]=='CLOSED')
+res.take(2)
+[u'1,2013-07-25 00:00:00.0,11599,CLOSED', u'4,2013-07-25 00:00:00.0,8827,CLOSED']
+res.count()
+7556
+```
+----
 ### 6. Create a Rdd from a file in hdfs
 
 First load the file into HDFS if the file is not already present either using sqoop to import if the file is in a database or just -put if the file is in local.
@@ -234,19 +244,18 @@ join = om.join(oim)
 join.first()
 (32768, (u'PENDING_PAYMENT', u'199.99'))
 ```
-
-
+----
 ### 12. Using leftOuterJoin(), rightOuterJoin() and fullOuterJoin()
 
-When performing **left** outer join between table A and B: All records from table A and matches with table B (Possible Null/None values from table B added to res)
+When performing ***left*** outer join between table A and B: All records from table A and matches with table B (Possible Null/None values from table B added to res)
 
 > Syntax: join = a.leftOuterJoin(b)
 
-When performing **right** outer join between table A and B: All records from table B and matches with table A (Possible Null/None values from table A added to res)
+When performing ***right*** outer join between table A and B: All records from table B and matches with table A (Possible Null/None values from table A added to res)
 
 > Syntax: join = b.rightOuterJoin(a)
 
-When performing **full** outer join between table A and B: All records from table A and B (Possible Null/None values from table A and B added to res).
+When performing ***full*** outer join between table A and B: All records from table A and B (Possible Null/None values from table A and B added to res).
 
 > Syntax: join = b.fullOuterJoin(a)
 
@@ -260,6 +269,8 @@ fjoin = om.fullOuterJoin(oim)
 ### 13. Using countByKey() for word count
 
 countByKey() is only available on RDDs of type (K, V). Returns a hashmap of (K, Int) pairs with the count of each key. 
+
+**Note: countByKey() returns a python Dict and not a RDD. Not practical for large datasets**
 
 ```
 res = temp.flatMap(lambda x: x.split(" ")).map(lambda x: (x,1)).countByKey()
