@@ -27,7 +27,7 @@
 | repartitionAndSortWithinPartitions(partitioner)	| Repartition the RDD according to the given partitioner and, within each resulting partition, sort records by their keys. This is more efficient than calling repartition and then sorting within each partition because it can push the sorting down into the shuffle machinery. |
 
 
-| Command | File-type | Description | 
+| Command | File type | Description | 
 | ------- | --------- | ----------- |
 | textFile() | RDD | Create a rdd file from a file present in HDFS, path of the file is passed as args. | 
 | collect() | RDD/DF | Displays the entire content of the rdd_file/DF. CAUTION while using this can cause huge load since the files are large. |
@@ -42,21 +42,21 @@
 | filter() | | |
 | flatMap() | | |
 
-| Examples |
-| -------- |
-| 1. Creating RDD from a list |
-| 2. Create a RDD from a local file |
-| 3. Using sqlContext.load() and sqlContext.read() |
-| 4. Using map() transformation function |
+| No. | Examples |
+| --- |-------- |
+| 1. | Creating RDD from a list |
+| 2. | Create a RDD from a local file |
+| 3. | Using sqlContext.load() and sqlContext.read() |
+| 4. | Using map() transformation function |
 | 5. |
-| 6. Create a Rdd from a file in hdfs |
-| 7. Create a RDD from a file in local file system |
-| 8. Word ocunt using flatMap(), map() and reduceByKey() |
-| 9. Using sample() |
-| 10. Using distinct() |
-| 11. Using joins() |
-| 12. Using leftOuterJoin(), rightOuterJoin() and fullOuterJoin() |
-| 13. Using countByKey() for word count |
+| 6. | Create a Rdd from a file in hdfs |
+| 7. | Create a RDD from a file in local file system |
+| 8. | Word ocunt using flatMap(), map() and reduceByKey() |
+| 9. | Using sample() |
+| 10. | Using distinct() |
+| 11. | Using joins() |
+| 12. | Using leftOuterJoin(), rightOuterJoin() and fullOuterJoin() |
+| 13. | Using countByKey() for word count |
 
 > Note: If you are grouping in order to perform an aggregation (such as a sum or average) over each key, using reduceByKey or aggregateByKey will yield much better performance. 
 
