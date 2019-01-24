@@ -16,16 +16,18 @@
 | **persist()** | **DF** | ***Display column name and data type.*** |
 | **columns** | **DF** | ***Display only column names.*** |
 | collect() | RDD/DF | Displays the entire content of the rdd_file/DF. ***CAUTION while using this can cause huge load since the files are large.*** |
-| map() | | |
-| filter() | | |
-| flatMap() | | Return a new dataset formed by selecting those elements of the source on which func returns true. |
-| reduceByKey() | | |
+| map() | RDD/DF | Return a new distributed dataset formed by passing each element of the source through a function func. |
+| filter() | RDD/DF | Return a new dataset formed by selecting those elements of the source on which func returns true. |
+| flatMap() | RDD/DF | Return a new dataset formed by selecting those elements of the source on which func returns true. |
 | join() | RDD | Perform ***Inner*** join |
 | leftOuterJoin()| RDD | Perform ***left*** outer join |
 | rightOuterJoin()| RDD | Perform ***right*** outer join |
 | fullOuterJoin()| RDD | Perform ***full*** outer join |
-| distinct() | RDD | Get a list of all distinct values in a RDD |
-| countByKey() | RDD | Get a count of keys provides (K,V) returns (K,count(V))
+| distinct() | RDD/DF | Get a list of all distinct values in a RDD |
+| reduceByKey(f) | RDD/DF | Returns (K,count(V)) for a list of inputs (K,V). Requires a lambda function |
+| groupByKey(f) | RDD/DF | For input pairs (K,V) returns pairs of (K, special_rdd_list(\[all values of Key k])) |
+| aggregateByKey(,s,c) | RDD/DF | For input pairs (K,V) returns output pairs of (K,U), where V and U need not be of same data-type |
+| countByKey() | RDD/DF | Get a count of keys provides (K,V) returns (K,count(K)). Does not need a lambda function |
 | sample(rep,fraction,seed) | RDD/DF | returns a fraction of sample. |   
 
 | No. | Examples |
@@ -43,8 +45,17 @@
 | 11. | Using joins() |
 | 12. | Using leftOuterJoin(), rightOuterJoin() and fullOuterJoin() |
 | 13. | Using countByKey() for word count |
+| 14. | Using reduceByKey(f) |
+| ***15. | Using groupByKey()*** |
+| 16. | Using reduceByKey(f) for advance operations |
+| ***17. | Using aggregateByKey(,s,c)*** |
+| 18. | Using sortByKey([asc=1]) |
+| 19. | Using sortByKey() advanced for multiple sorts |
+
 
 > Note: If you are grouping in order to perform an aggregation (such as a sum or average) over each key, using reduceByKey or aggregateByKey will yield much better performance. 
+
+> Note: reduceByKey and aggregateByKey uses combiner which increases the performance compared to groupByKey.
 
 > Note: By default, the level of parallelism in the output depends on the number of partitions of the parent RDD. You can pass an optional numTasks argument to set a different number of tasks.
 
@@ -55,6 +66,31 @@
 > Note: countByKey() is a action not a transformation, where as reduceByKey() and aggrigateByKey() are transformations.
 
 > Note: CAUTION while using this can cause huge load since the files are large.
+
+> Note: distinct() used on DF returns DataFrame\[col_name: col_type].
+
+
+### Difference between groupByKey and aggregateByKey, reduceByKey:
+
+groupByKey uses ***single thread*** example:
+
+Consider we need to perform sum of the key 1 which has values (1 to 1000). groupByKey uses the following method
+> (1,(1 to 1000))  sum(1,1000) => 1+2+3+.....1000.
+same example performed by aggregateByKey and reduceByKey which uses ***multiple resources/threads***
+> (1, (1 to 1000)) sum(1,1000) => sum(sum(1,250),sum(251,500),sum(501,750),sum(751,1000)).
+
+### Difference between aggregateByKey and reduceByKey:
+
+In the above example we see that the logic for computing is sum(sum's) i.e the computing the intermediate values and the final value / combiner logic are same. 
+
+When the logic for computing the ***intermediate values and combiner are same*** we need to use reduceByKey(f) and pass a lambda function with the logic
+
+example:
+> reduceByKey(lambda x,y: (x+y))
+
+When the logic for computing the ***intermediate values and combiner are Different*** we need to use aggregateByKey(seqOP,comOp)
+we need to pass both logic to compute intermediate logic and a logic for the combiner.
+
 
 
 ### 1. Creating RDD from a list
@@ -280,8 +316,352 @@ res
 defaultdict(<type 'int'>, {u'a': 2, u'': 1, u'pyhon!': 1, u'word': 2, u'agin': 1, u'just': 1, u'this': 2, u'demo': 2, u'is': 2, u'count': 1, u'for': 1, u'written': 1, u'program': 2, u'in': 1, u'the': 1, u'Hello': 1, u'connt': 1})
 ```
 ----
+### 14. Using reduceByKey(f)
 
-### 14. 
+Consider the following example:
+
+First we create a RDD for order_items 
+```
+order_items=sc.textFile("/user/cloudera/spark/order_items/")
+order_first()
+u'1,1,957,1,299.98,299.98'
+```
+For this example our aim is to calculate the total revenue for order_item_id = 2, for which we need the ***2nd and the 4th element from each row.***
+
+Next step is to extract all values for order_item_id = 2
+```
+temp = order_items.map(lambda x: (int(x.split(",")[1]) , float(x.split(",")[4]))).filter(lambda x: (int(x[0])==2))
+temp.first()
+(2, , 199.99000000000001)
+```
+Next we need to perform the sum of the 2nd element in the list
+
+See what happens if we use countByKey() and reduceByKey()
+```
+res = temp.reduceByKey(lambda x,y: x+y)
+res.first()
+(2, 579.98000000000002)
+res_c = temp.countByKey()
+res_c
+defaultdict(<type 'int'>, {2: 3})
+```
+***As we can see countByKey() just returns number of keys present in the input.***
+----
+
+### 15. Using groupByKey()
+
+Consider the similar example to 14. where we try to find the total revenue for all order_item_id
+
+For this example our aim is to calculate the total revenue for all order_item_id, for which we need the ***2nd and the 4th element from each row.***
+
+Next step is to extract all values for all order_item_id
+```
+temp = order_items.map(lambda x: (int(x.split(",")[1]) , float(x.split(",")[4])))
+temp.first()
+(1, 299.98000000000002)
+```
+Next we need to perform the sum of the 2nd element in the list for each order_item_id. Let's try to achieve this using groupByKey()
+```
+res = temp.countByKey()
+res
+PythonRDD[100] at RDD at PythonRDD.scala:43
+
+for i in x.take(5): print(i)
+...
+(32768, <pyspark.resultiterable.ResultIterable object at 0x294c950>)
+(49152, <pyspark.resultiterable.ResultIterable object at 0x294c8d0>)
+(4, <pyspark.resultiterable.ResultIterable object at 0x294c290>)
+(50192, <pyspark.resultiterable.ResultIterable object at 0x294c850>)
+(8, <pyspark.resultiterable.ResultIterable object at 0x294c690>)
+
+for i in x.take(5): list(i[1])
+... 
+[199.99000000000001, 129.99000000000001, 299.98000000000002, 399.98000000000002]
+[299.98000000000002]
+[49.979999999999997, 299.94999999999999, 150.0, 199.91999999999999]
+[129.99000000000001, 140.0, 249.90000000000001]
+[179.97, 299.94999999999999, 199.91999999999999, 50.0]
+
+for i in x.take(5): sum(list(i[1]))
+... 
+1029.9400000000001
+299.98000000000002
+699.85000000000002
+519.88999999999999
+729.83999999999992
+```
+----
+### 16. Using reduceByKey(f) for advance operations 
+
+In this example use reduceByKey(f) for getting a list of the greatest,least sub-total for all the order_items_id
+```
+temp = order_items.map(lambda x: (int(x.split(",")[1]) , float(x.split(",")[4]))).filter(lambda x: (int(x.split(",")[1]==2)))
+temp.take(3)
+[(2, 199.99000000000001), (2, 250.0), (2, 129.99000000000001)]
+
+res = temp.reduceByKey(lambda x,y: x+y)
+res.first()
+(2, 579.98000000000002) 
+
+res = temp.reduceByKey(lambda x,y: x if x>y else y)
+(2, 129.99000000000001)   
+
+res = temp.reduceByKey(lambda x,y: x if x>y else y)
+(2, 250.0)
+```
+Next example the problem statement is to get all the records with all fields whose sub_total value is the least for each order_item_id.
+
+i.e for every order_item_id there are multiple row's, our aim to get only the rows wher the sub_total value is the least.
+
+Note when we use reduceByKey(f) we have to pass a list of (K,V)'s we cannot pass a list with just one field.
+
+***i.e we cannot perform the following:***
+```
+order_items.first()
+u'1,1,957,1,299.98,299.98'
+
+reduceByKey(lambda x,y: x if (float(x.split(",")[4])>float(y.split(",")[4])) else y )
+ERROR!
+```
+***We cannot go with the above solution because x,y values in the lambda points to the V values in the list (K,V) but in the above senario we are passing a list with only one value (K)***
+
+Alternate solution is to create a list with two values (K,V) \[(1, u'1,1,957,1,299.98,299.98')]
+
+We are creating a list of (order_item_id, entire row)
+```
+order_items.first()
+u'1,1,957,1,299.98,299.98'
+
+temp = order_items.map(lambda x: (int(x.split(",")[1]) , x)))
+temp.first()
+(1, u'1,1,957,1,299.98,299.98')
+
+res = temp.reduceByKey(lambda x,y: x if float(x.split(",")[4])<float(x.split(",")[4]) else y )
+res.first()
+(1, u'1,1,957,1,299.98,299.98')                                                 
+
+for i in res.take(2): print(i[1])
+... 
+1,1,957,1,299.98,299.98
+4,2,403,1,129.99,129.99
+```
+----
+
+### 17. Using aggregateByKey(,s,c)
+
+> Note: Both ***aggregateByKey(,s,c) and reduceByKey(f) uses multiple threads*** to perform its tasks.
+
+We use aggregateByKey when we need the output in a different data type compared to input data type
+
+***Input and output for aggregateByKey()
+
+**Input: (K,V) pairs**
+
+**Output: (K,U) pairs**
+
+> Note: V and U need not be of same data type.
+
+For this problem statement we are trying to get a list of (order_item_id, (total_revnue, count(order_item_id)))
+
+First step lets try to get (K,V) for out problem statement, so for this example we need (order_item_id, sub_total)
+
+If we have sub_total we can calculate total_revnue and count(order_item_id)
+
+```
+order_items = sc.textFile("/user/cloudera/spark/order_items/")
+order_items.first()
+u'1,1,957,1,299.98,299.98'
+
+temp = order_items.map(lambda x: (int(x.split(",")[1]), float(x.split(",")[4])))
+for i in temp.take(5): print(i)
+(1, 299.98000000000002)
+(2, 199.99000000000001)
+(2, 250.0)
+(2, 129.99000000000001)
+(4, 49.979999999999997)
+```
+
+Now consider the rows only for the order_item_id = 2
+
+We have the following
+```
+(2, 199.99000000000001)
+(2, 250.0)
+(2, 129.99000000000001)
+```
+We know that aggregateByKey uses threads so assume, that the first two rows will be an input for 1st thread and the 3rd row will be an input for the 2nd thread.
+
+We need the output as (order_item_id, (sum(sub_total), count(order_item_id))) so, the logic for the threads will be as follows
+
+\# sub-list of the output sum(sub_total) would be float and count(order_item_id) would be int
+
+\# initilize the temp variable
+```
+x = (0.0 , 0) # Output
+t = (2, 199.99000000000001) # Input 
+y = t[1]
+x = (x[0] + y, x[1] + 1) 
+print(x)
+(199.99000000000001, 1)
+
+Next input 
+t = (2, 250.0)              # Input 
+y = t[1]
+x = (199.99000000000001, 1) 
+x = (x[0] + y, x[1] + 1) 
+print(x)
+(449.99000000000001, 2)
+```
+Finally output from the 1st thread will be:    x1 = (449.99000000000001, 2)
+
+Similarly Output from the 2nd thread will be:  x2 = (129.99000000000001, 1)
+
+Next we have to write our reducer logic
+```
+x = (x1[0] + x2[0], x1[1],x2[1])
+
+print(x)
+(579.9800000000002, 3)
+```
+Threfore we get the following:
+
+| Initilizer / output data type | (0.0, 0) |
+| Combiner Logic | (x\[0] + y, x\[1] + 1) |
+| Reducer Logic | x = (x1\[0] + x2\[0], x1\[1],x2\[1]) |
+
+### Now we can use aggregateByKey()
+```
+order_items = sc.textFile("/user/cloudera/spark/order_items/")
+order_items.first()
+u'1,1,957,1,299.98,299.98'
+
+temp = order_items.map(lambda x: (int(x.split(",")[1]),float(x.split(",")[4])))
+temp.first()
+
+res = temp.aggregateByKey((0.0,0), lambda x,y: (x[0] + y, x[1]+1), lambda x1,x2: (x1[0] + x1[0], x1[0] + x1[0]))
+res.sortByKey()
+for i in res.take(6): print(i)
+1, (299.98000000000002, 1))                                                    
+(2, (579.98000000000002, 3))
+(4, (699.85000000000002, 4))
+(5, (1129.8600000000001, 5))
+(7, (579.92000000000007, 3))
+(8, (729.83999999999992, 4))
+```
+----
+### 18. Using sortByKey([asc=1])
+
+> Default sort is asc which is value 1 or sortByKey(1)
+
+> Sorting in Desc: sortByKey(0)
+
+Consider the output from the previous example:
+
+```
+x=res.sortByKey(0)
+for i in x.take(10): print(i)
+(68883, (2149.9899999999998, 2))
+(68882, (109.99000000000001, 2))
+(68881, (129.99000000000001, 1))
+(68880, (999.76999999999998, 5))
+(68879, (1259.97, 3))
+(68878, (739.93000000000006, 4))
+(68875, (2399.9499999999998, 2))
+(68873, (859.91000000000008, 5))
+(68871, (499.98000000000002, 2))
+(68870, (479.91999999999996, 2))
+```
+
+### 19. Using sortByKey() advanced for multiple sorts
+
+***Problem statement: Sort the data in acending order for order_item_id and decending for sub_total, by passing multiple keys as input ((K1,K2),V)***
+
+First step check the first sort requirement
+```
+order_items.first()
+u'1,1,957,1,299.98,299.98'
+```
+### Sort the data on field\[1] asc and then field\[4]desc
+
+Next create keys for sortByKey()
+```
+temp = order_items.map(lambda x: ((int(x.split(",")[1]), float(x.split(",")[4])),x))
+temp.first()
+((1, 299.98000000000002), u'1,1,957,1,299.98,299.98')
+```
+Now we have ((K1, K2), V) so, we can perform sort
+```
+res = temp.sortByKey()
+for i in res.take(10): print (i)
+((1, 299.98000000000002), u'1,1,957,1,299.98,299.98')                           
+((2, 129.99000000000001), u'4,2,403,1,129.99,129.99')
+((2, 199.99000000000001), u'2,2,1073,1,199.99,199.99')
+((2, 250.0), u'3,2,502,5,250.0,50.0')
+((4, 49.979999999999997), u'5,4,897,2,49.98,24.99')
+((4, 150.0), u'7,4,502,3,150.0,50.0')
+((4, 199.91999999999999), u'8,4,1014,4,199.92,49.98')
+((4, 299.94999999999999), u'6,4,365,5,299.95,59.99')
+((5, 99.959999999999994), u'11,5,1014,2,99.96,49.98')
+((5, 129.99000000000001), u'13,5,403,1,129.99,129.99')
+```
+From the output we can see that the first field is sorted asc. But ***We need the 2nd key to be sorted in desc***.
+
+Instead of 
+```
+((2, 129.99000000000001), u'4,2,403,1,129.99,129.99')
+((2, 199.99000000000001), u'2,2,1073,1,199.99,199.99')
+((2, 250.0), u'3,2,502,5,250.0,50.0')
+```
+We need
+```
+((2, 250.0), u'3,2,502,5,250.0,50.0')
+((2, 199.99000000000001), u'2,2,1073,1,199.99,199.99')
+((2, 129.99000000000001), u'4,2,403,1,129.99,129.99')
+```
+***One soluton or a trick is to convert the 2nd key values to negative***
+temp = order_items.map(lambda x: ((int(x.split(",")\[1]), ***-float(x.split(",")\[4])),x))***
+```
+temp = order_items.map(lambda x: ((int(x.split(",")[1]), -float(x.split(",")[4])),x))
+temp.first()
+((1, -299.98000000000002), u'1,1,957,1,299.98,299.98')
+
+res = temp.sortByKey()
+
+>>> for i in res.take(5):print(i)
+((1, -299.98000000000002), u'1,1,957,1,299.98,299.98')                          
+((2, -250.0), u'3,2,502,5,250.0,50.0')
+((2, -199.99000000000001), u'2,2,1073,1,199.99,199.99')
+((2, -129.99000000000001), u'4,2,403,1,129.99,129.99')
+((4, -299.94999999999999), u'6,4,365,5,299.95,59.99')
+
+for i in res.take(5): print(i[1])
+1,1,957,1,299.98,299.98
+3,2,502,5,250.0,50.0
+2,2,1073,1,199.99,199.99
+4,2,403,1,129.99,129.99
+6,4,365,5,299.95,59.99
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
