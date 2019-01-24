@@ -29,6 +29,9 @@
 | aggregateByKey(,s,c) | RDD/DF | For input pairs (K,V) returns output pairs of (K,U), where V and U need not be of same data-type |
 | countByKey() | RDD/DF | Get a count of keys provides (K,V) returns (K,count(K)). Does not need a lambda function |
 | sample(rep,fraction,seed) | RDD/DF | returns a fraction of sample. |   
+| top(n,key) | RDD/DF | Returns a python list sorted based on key (lambda function) in ***desc (can be manipulated to return in desc)*** |
+| takeOrdered(n,key) | RDD/DF | Similar to top() but returns python list in ***asc (can be manipulated to return in desc)*** |
+
 
 | No. | Examples |
 | --- |-------- |
@@ -51,6 +54,7 @@
 | ***17.*** | ***Using aggregateByKey(,s,c)*** |
 | 18. | Using sortByKey([asc=1]) |
 | 19. | Using sortByKey() advanced for multiple sorts |
+| 20. | Using top() and takeOrdered() |
 
 
 > Note: If you are grouping in order to perform an aggregation (such as a sum or average) over each key, using reduceByKey or aggregateByKey will yield much better performance. 
@@ -604,7 +608,9 @@ for i in res.take(10): print (i)
 ((5, 99.959999999999994), u'11,5,1014,2,99.96,49.98')
 ((5, 129.99000000000001), u'13,5,403,1,129.99,129.99')
 ```
-From the output we can see that the first field is sorted asc. But ***We need the 2nd key to be sorted in desc***.
+From the output we can see that the first field is sorted asc. 
+
+But ***We need the 2nd key to be sorted in desc***.
 
 Instead of 
 ```
@@ -612,13 +618,14 @@ Instead of
 ((2, 199.99000000000001), u'2,2,1073,1,199.99,199.99')
 ((2, 250.0), u'3,2,502,5,250.0,50.0')
 ```
-We need
+We need the output to be
 ```
 ((2, 250.0), u'3,2,502,5,250.0,50.0')
 ((2, 199.99000000000001), u'2,2,1073,1,199.99,199.99')
 ((2, 129.99000000000001), u'4,2,403,1,129.99,129.99')
 ```
 ***One soluton or a trick is to convert the 2nd key values to negative***
+
 temp = order_items.map(lambda x: ((int(x.split(",")\[1]), ***-float(x.split(",")\[4])),x))***
 ```
 temp = order_items.map(lambda x: ((int(x.split(",")[1]), -float(x.split(",")[4])),x))
@@ -627,7 +634,7 @@ temp.first()
 
 res = temp.sortByKey()
 
->>> for i in res.take(5):print(i)
+for i in res.take(5):print(i)
 ((1, -299.98000000000002), u'1,1,957,1,299.98,299.98')                          
 ((2, -250.0), u'3,2,502,5,250.0,50.0')
 ((2, -199.99000000000001), u'2,2,1073,1,199.99,199.99')
@@ -640,6 +647,49 @@ for i in res.take(5): print(i[1])
 2,2,1073,1,199.99,199.99
 4,2,403,1,129.99,129.99
 6,4,365,5,299.95,59.99
+```
+----
+### 20. Using top(n,key) and takeOrdered(n,key)
+
+***Problem statement: Sort the data and get the top 10 sub_total values from order_items***
+```
+res = order_items.top(10, lambda x: float(x.split(",")[4]))
+type(res)
+<class 'list'>
+
+for i in res: print(i)
+171765,68703,208,1,1999.99,1999.99
+171806,68722,208,1,1999.99,1999.99
+171811,68724,208,1,1999.99,1999.99
+171837,68736,208,1,1999.99,1999.99
+171920,68766,208,1,1999.99,1999.99
+171961,68778,208,1,1999.99,1999.99
+172019,68806,208,1,1999.99,1999.99
+172032,68809,208,1,1999.99,1999.99
+172060,68821,208,1,1999.99,1999.99
+172101,68837,208,1,1999.99,1999.99
+```
+
+To get in desc
+
+res = order_items.top(10, lambda x: ***-float(x.split(",")\[4]))***
+
+### OR
+
+Use ***takeOrdered(n,key)***
+```
+res = order_items.takeOrdered(10, lambda x: float(x.split(",")[4]))
+for i in res: print(i)
+575,234,775,1,9.99,9.99
+4866,1944,775,1,9.99,9.99
+5066,2023,775,1,9.99,9.99
+5713,2277,775,1,9.99,9.99
+13487,5404,775,1,9.99,9.99
+13859,5557,775,1,9.99,9.99
+13959,5597,775,1,9.99,9.99
+15441,6177,775,1,9.99,9.99
+18434,7361,775,1,9.99,9.99
+18497,7387,775,1,9.99,9.99
 ```
 
 
