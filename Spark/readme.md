@@ -46,9 +46,9 @@
 | 12. | Using leftOuterJoin(), rightOuterJoin() and fullOuterJoin() |
 | 13. | Using countByKey() for word count |
 | 14. | Using reduceByKey(f) |
-| ***15. | Using groupByKey()*** |
+| ***15.*** | ***Using groupByKey()*** |
 | 16. | Using reduceByKey(f) for advance operations |
-| ***17. | Using aggregateByKey(,s,c)*** |
+| ***17.*** | ***Using aggregateByKey(,s,c)*** |
 | 18. | Using sortByKey([asc=1]) |
 | 19. | Using sortByKey() advanced for multiple sorts |
 
