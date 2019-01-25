@@ -268,15 +268,15 @@ sqoop import \
     
 - --warehouse-dir <dir> sub dir created with table name and that dir contains data files
 
-- In simple terms:
+- Explanation:
 
 1. If target-dir is used we can specify the name of the output directory under which four part-m files are created
    
    ex: when we use target-dir sqoop/warehouse/output
    
-       **The output is stored at sqoop/warehouse/output/**
+       The output is stored at sqoop/warehouse/output/
        
-       Now if we execute **hadoop fs -ls sqoop/warehouse/output** we get four files
+       Now if we execute hadoop fs -ls sqoop/warehouse/output we get four files
        
        - part-m-00001
        - part-m-00002
@@ -288,20 +288,20 @@ sqoop import \
    ex: when we use warehouse-dir sqoop/warehouse/output
    
    
-   **The output files are stored under a newely created dir that with the table name
+   **The output files are stored under a newely created dir that with the table name**
    
-       i.e **sqoop/warehouse/output/table_name**
+       i.e sqoop/warehouse/output/table_name
        
        Now to check the output file we need to execute
        
-       **hadoop fs -ls sqoop/warehouse/output/table_name** we get
+       hadoop fs -ls sqoop/warehouse/output/table_name we get
        
        - part-m-00001
        - part-m-00002
        - part-m-00003
        - part-m-00004       
 
-       **table_name is the new dir that is created.**
+       table_name is the new dir that is created.
 
 
 **Note: --delete-target-dir: No additional arguments passed, delete dir if exists**
@@ -323,9 +323,9 @@ sqoop import \
 
 An error occurs stating target-dir already exists
 
-**to over come this error use: delete-target-dir**
+**to overcome this error use: delete-target-dir**
 
-It deletes the target-dir if exists. Ignores if the dir is not present**
+It deletes the target-dir if exists. Ignores if the dir is not present
 ```
 sqoop import \
     --connect jdbc:mysql://my.server.com:3306/my_database   \
@@ -345,14 +345,14 @@ sqoop import \
 **Note: This command should not be used with --delete-target-dir**
 
 --append: No additional arguments are needed to be passed
-
+```
 sqoop import \
     --connect jdbc:mysql://my.server.com:3306/my_database   \
     --username user \
     -P
     --warehouse-dir path    \
     --append
-
+```
 ----
 
 **Using --split-by command**
@@ -369,7 +369,7 @@ Because all the primary key values defined in a table are **indexed**.
     - what if the primary key not evenly spaced even though it is of type INT?
 ```
 
-**9. Try to run the followin import command on a table without a primary key**
+**9. Try to run the following import command on a table without a primary key**
 ```
 sqoop import \
     --connect jdbc:mysql://localhost:3306/retail_db \
@@ -451,6 +451,7 @@ sqoop import \
      --split-by customer_id
 ```
 **Now try using split-by on non numeric column**
+
 **11. Use split-by on a non numeric column**
 ```
 sqoop import \
@@ -480,7 +481,7 @@ Caused by: Generating split for a textual index column allowed only in case of "
 Property passed as parameter
 ```
 
-**It's actually hint to use: "-Dorg.apache.sqoop.splitter.allow_text_splitter=True" **
+**It's actually hint to use: "-Dorg.apache.sqoop.splitter.allow_text_splitter=True"**
 
 **12. Use split-by on a non numberic column and set: -Dorg.apache.sqoop.splitter.allow_text_splitter to True**
 ```
@@ -598,9 +599,9 @@ sqoop import \
 
 **Note: To get all the availabe compression formats navigate to**
 
-**cd etc/hadoop/conf
+**cd etc/hadoop/conf**
 
-cat core-site.xml**
+**cat core-site.xml**
 
 Search for the line with **codec**
 and check to the values\formats enabled
@@ -660,7 +661,7 @@ sqoop import \
 
 **Boundary query for Transformations and Filtering on**
 
-- column
+- Column
 - Query
 
 We can use --column tag to specify the columns that we need  to import.
@@ -697,7 +698,7 @@ sqoop import \
      --compression-codec org.apache.hadoop.io.compress.SnappyCodec 
 ```
 ----
-**21. **
+**21.**
 
 **Note: Parameters and their uses**
 
