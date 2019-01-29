@@ -96,8 +96,6 @@ and so on..
 | **18. Import data as text file and compress the data into SnappyCodec format.** |
 | **19. Import data as text file and compress with specific bounding query** |
 | **20. Import data from specific columns** |
-| **21. Import data from multiple tables and specific columns** |
-| **21. ** |
 | **22. Import data from multiple column from a single table** |
 | **23. import data from multiple tables and multiple column** |
 | **24. Using autoreset-to-one-mapper** |
@@ -127,11 +125,11 @@ and so on..
 | sqoop-help | sqoop help | - | List all commands for sqoop |
 | version | - | - | Display the version of the sqoop installed |
 | username | - | - | Name of the user trying to access data |
-| --Password | -P | --password-file | Password for connecting to the database |
+| Password | -P | password-file | Password for connecting to the database |
 | sqoop-list-database | sqoop list-databases | - | List all the database in source |
-| --num-mappers | -m | - | Configuring the number of mappers |
-| --query | -e | - | Query tag |
-| -z | --compress | - | Enable\Disable compression |
+| num-mappers | -m | - | Configuring the number of mappers |
+| query | -e | - | Query tag |
+| compress | -z | - | Enable\Disable compression |
 | list-tables | sqoop-list-tables | - | List all the tables in the database |
 | import | - | - | import data |
 | connect | - | - | Connection string with a jdbc |
@@ -145,22 +143,22 @@ and so on..
 | as-parquetfile | - | - | import / export data in Binary Colomnar format |
 | split-by | - | - | split the data into multiple files based on a specified colomn |
 | colomn | - | - | specify the column to be imported |
-| --autoreset-to-one-mapper | - | - | resets to one mapper if PK and split-by is not present |
-| --null-string | - | - | Replace a null value of a type string to a desired value |
-| --null-non-string | - | - | Replace a null value of a type numeric to a desired value |
-| --fields-terminated-by | - | - | Change the delimiter |
-| --lines-terminated-by | - | - | Change the new line character |
-| --enclosed-by | - | - | Change the enclosing character |
-| --escaped-by | - | - | Change the escape character |
-| --optionally-enclosed-by | - | - | Change the enclosing char when the value is same as the delimiter |
-| --check-column | - | - | Used for incremental append, Column to be verified for the latest value |
-| --incremental <mode> | - | - | Mode for incremental update of data |
-| --last-value | - | - | latest value updated/inserted into the HDFS |
-| --hive-import | - | - | enable import data into hive data store |
-| --hive-database | - | - | Define the database to which the table needs to be copied |
-| --hive-table | - | - | Name of the table to be created in HIVE to upload the imported data |    
-| --hive-overwrite | - | - | Overwrite existing data in hive |
-| --export-dir | - | - | Location of dir in hdfs with data to be exported |
+| autoreset-to-one-mapper | - | - | resets to one mapper if PK and split-by is not present |
+| null-string | - | - | Replace a null value of a type string to a desired value |
+| null-non-string | - | - | Replace a null value of a type numeric to a desired value |
+| fields-terminated-by | - | - | Change the delimiter |
+| lines-terminated-by | - | - | Change the new line character |
+| enclosed-by | - | - | Change the enclosing character |
+| escaped-by | - | - | Change the escape character |
+| optionally-enclosed-by | - | - | Change the enclosing char when the value is same as the delimiter |
+| check-column | - | - | Used for incremental append, Column to be verified for the latest value |
+| incremental <mode> | - | - | Mode for incremental update of data |
+| last-value | - | - | latest value updated/inserted into the HDFS |
+| hive-import | - | - | enable import data into hive data store |
+| hive-database | - | - | Define the database to which the table needs to be copied |
+| hive-table | - | - | Name of the table to be created in HIVE to upload the imported data |    
+| hive-overwrite | - | - | Overwrite existing data in hive |
+| export-dir | - | - | Location of dir in hdfs with data to be exported |
     
 
 
@@ -503,7 +501,7 @@ sqoop import \
 | ------- | ----------- |
 | --as-avrodatafile | Binary JSON format |
 | --as-sequencefile | Binary format |
-| --as-textfile | Simple text  (Default) |
+| ***--as-textfile*** | ***Simple text  (Default)*** |
 | --as-parquetfile | Binary Columnar file format |
 
 **13. Import data as sequencefile**
@@ -669,8 +667,10 @@ we can use --Query tag to filter the data from the table and import the data.
 
 **20. Import data from specific columns**
 **Note: When importing data from multiple columns, there should not be any empty space between the column names supplied**
-**Invalid syntax: --columns col1, col2, col3**
-**Correct syntax: --columns col1,col2,col3**
+
+***Invalid syntax: --columns col1, col2, col3***
+
+***Correct syntax: --columns col1,col2,col3***
 
 ```
 sqoop import \
@@ -698,7 +698,6 @@ sqoop import \
      --compression-codec org.apache.hadoop.io.compress.SnappyCodec 
 ```
 ----
-**21.**
 
 **Note: Parameters and their uses**
 
