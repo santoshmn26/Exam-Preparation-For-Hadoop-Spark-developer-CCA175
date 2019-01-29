@@ -45,7 +45,7 @@ However, sorting can be done using a dataframe or RDD. Perform aggregation in ea
         /user/cloudera/problem1/result4c-csv
 ```
 ### Create a mysql table named result and load data from /user/cloudera/problem1/result4a-csv to mysql table named result 
-
+------
 ### Solution
 
 ### 1. Using sqoop, import orders table into hdfs to folders /user/cloudera/problem1/orders. File should be loaded as Avro File and use snappy compression
@@ -61,7 +61,14 @@ hadoop fs -mkdir /user/cloudera/problem1/
 
 Now the folder is created start importing using sqoop
 ```
-sqoop import --connect "jdbc:mysql://localhost/retail_db" --username root --password cloudera --table orders --target-dir /user/cloudera/problem1/orders -z --compression-codec org.apache.hadoop.io.compress.SnappyCodec --as-avrodatafile
+sqoop import \ 
+        --connect "jdbc:mysql://localhost/retail_db" \
+        --username root --password cloudera \
+        --table orders \
+        --target-dir /user/cloudera/problem1/orders \
+        -z \
+        --compression-codec.org.apache.hadoop.io.compress.SnappyCodec \
+        --as-avrodatafile
 ```
 Confirm with checking the path in hdfs
 ```
@@ -81,22 +88,33 @@ hadoop fs -mkdir /user/cloudera/problem1/
 
 Now the folder is created start importing using sqoop
 ```
-sqoop import --connect "jdbc:mysql://localhost/retail_db" --username root --password cloudera --table orders --target-dir /user/cloudera/problem1/order_items -z --compression-codec org.apache.hadoop.io.compress.SnappyCodec --as-avrodatafile
+
+sqoop import \ 
+        --connect "jdbc:mysql://localhost/retail_db" \
+        --username root --password cloudera \
+        --table order_items \
+        --target-dir /user/cloudera/problem1/order_items \
+        -z \
+        --compression-codec.org.apache.hadoop.io.compress.SnappyCodec \
+        --as-avrodatafile
 ```
 Confirm with checking the path in hdfs
 ```
 hadoop fs -ls /user/cloudera/problem1/order_items/
+```
 ----
 ### 3. Using Spark Scala load data at /user/cloudera/problem1/orders and /user/cloudera/problem1/orders-items items as dataframes. 
 
-Launch Pyspark
+### Launch Pyspark
+
 ***Important: Make sure that you load the data as df or csv for easy processing of data. Using "com/databricks.spark.avro" loads the data as df***
+
 ```
 orders = sqlContext.read.format("com.databricks.spark.avro").load("/user/cloudera/problem1/orders/")
 order_items = sqlContext.read.format("com.databricks.spark.avro").load("/user/cloudera/problem1/orders/")
 ```
-***Converting DF to RDD***
 
+***Converting DF to RDD***
 ```
 orders_rdd = orders.rdd.map(list)
 order_items_rdd = order_items.map(list)
