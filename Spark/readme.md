@@ -691,7 +691,111 @@ for i in res: print(i)
 18434,7361,775,1,9.99,9.99
 18497,7387,775,1,9.99,9.99
 ```
+----
+Change takeOrdered
+----
+### 21. Using groupByKey() and sorted(K, Key, reverse=False)*
 
+### Problem statement: Get order item details in descending order by revenue - groupByKey()
+
+***Same problem statement is achieved using sortByKey() with two keys check 19***
+
+### Solution:
+```
+oi = sc.textFile("/user/cloudera/spark/order_items")
+for i in oi.take(4): print(i)
+temp = oi.map(lambda x: (int(x.split(",")[1]),x))
+for i in temp.take(4): print(i)
+temp.groupByKey()
+for i in temp.take(4): print(i)
+res = temp.map(lambda x: sorted(x[1], key=lambda y: (float(y.split(",")[4])) ,reverse=True))
+for i in res.take(4): print(i)
+F_res = temp.flatMap(lambda x: sorted(x[1], key=lambda y: (float(y.split(",")[4])) ,reverse=True))
+for i in F_res.take(4): print(i)
+```
+
+***Note: Check the difference of using map and flatMap***
+
+***Note: sorted() default value for reverse = False
+
+Steps followed:
+```
+1. Load the data
+2. Create (K,V) for groupByKey() => (field[1],field[4])
+3. Use groupByKey to create (K , resultIterable)
+4. Use flatMap to map results in resultIterable and sort them using sorted
+5. Verify the resultIterable
+```
+----
+### 22. Load avrofile as a normal csv file using sqlContext*
+
+### Problem statement: Import a table from sql as avrodata if not already present in the hdfs and create a rdd using the file in the hdfs
+
+```
+orders_DF = sqlContext.read.format("com.databricks.spark.avro").load("/user/cloudera/orders_avrodata/")
+orders_RDD = orders_DF.rdd.map(list)
+```
+----
+### 23. Using groupByKey() and python API sorted(K, Key=, reverse=False)
+
+### Problem statement: Similar to 22 Get order item details in descending order by revenue on products table - groupByKey()
+
+***Same problem statement is achieved using sortByKey() with two keys check 19 But here we are using sorted Python's API***
+
+Solution:
+```
+products = sc.textFile("/user/cloudera/spark/products")
+products = products.filter(lambda x: x.split(",")[4]!="")
+temp = products.map(lambda x: (int(x.split(",")[1]),x)).groupByKey()
+res = temp.flatMap(lambda x: sorted(x[1],key=lambda y: float(y.split(",")[4]),reverse=True))
+for i in res.take(10): print(i)
+```
+----
+### 24. Using itertools python's collection package*
+
+### Problem statement: Products table have multiple sub_total for same order_item_id. Our aim to get the top 3 sub_totals for all order_item_id.
+
+Example:
+```
+1,***2***,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,***59.98***,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy
+2,***2***,Under Armour Men's Highlight MC Football Clea,,***129.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+3,***2***,Under Armour Men's Renegade D Mid Football Cl,,***89.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
+4,***2***,Under Armour Men's Renegade D Mid Football Cl,,***89.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
+5,***2***,Riddell Youth Revolution Speed Custom Footbal,,***199.99***,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
+6,***2***,Jordan Men's VI Retro TD Football Cleat,,***134.99***,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat
+7,***2***,Schutt Youth Recruit Hybrid Custom Football H,,***99.99***,http://images.acmesports.sports/Schutt+Youth+Recruit+Hybrid+Custom+Football+Helmet+2014
+8,***2***,Nike Men's Vapor Carbon Elite TD Football Cle,,***129.99***,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
+9,***2***,Nike Adult Vapor Jet 3.0 Receiver Gloves,,***50.0***,http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves
+```
+***We see that for the same id = 2 we have different sub_total. Our aim is to obtain only all rows within the top 3 values.***
+
+**Sample result for id = 2:**
+```
+5,***2***,Riddell Youth Revolution Speed Custom Footbal,,***199.99***,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
+6,***2***,Jordan Men's VI Retro TD Football Cleat,,***134.99***,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat
+2,***2***,Under Armour Men's Highlight MC Football Clea,,***129.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+8,***2***,Nike Men's Vapor Carbon Elite TD Football Cle,,***129.99***,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
+```
+### Note: In the output we have 129.99 twice.
+
+### Solution:
+```
+products = sc.textFile("/user/cloudera/spark/products/")
+products = products.filter(lambda x: x.split(",")[4]!='')
+temp = products.map(lambda x: (int(x.split(",")[1]),x))
+temp = temp.groupByKey()
+temp_1 = temp.filter(lambda x: x[0]==2)
+temp_2 = temp_1.flatMap(lambda x: sorted(x[1],key=lambda y: float(y.split(",")[4]),reverse=True))
+for i in temp_2.take(10): print i 
+temp_values = temp_2.map(lambda x: x.split(",")[4])
+r = set(temp_values.collect())
+s = sorted(r,reverse=True)
+top_values = s[:3]
+import itertools as it
+k = it.takewhile(lambda x: float(x.split(",")[4]) in top_values, temp_2.collect())
+for i in k: print i
+```
+----
 
 
 
