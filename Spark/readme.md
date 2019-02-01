@@ -55,6 +55,10 @@
 | 18. | Using sortByKey([asc=1]) |
 | 19. | Using sortByKey() advanced for multiple sorts |
 | 20. | Using top() and takeOrdered() |
+| ***21.*** | ***Using groupByKey() and sorted(K, Key, reverse=False)*** |
+| ***22.*** | ***Load avrofile as a normal csv file using sqlContext*** |
+| 23. | Using groupByKey() and python API sorted(K, Key=, reverse=False) |
+| 24. | Using itertools python's collection package* |
 
 
 > Note: If you are grouping in order to perform an aggregation (such as a sum or average) over each key, using reduceByKey or aggregateByKey will yield much better performance. 
@@ -692,7 +696,7 @@ for i in res: print(i)
 18497,7387,775,1,9.99,9.99
 ```
 ----
-Change takeOrdered
+
 ----
 ### 21. Using groupByKey() and sorted(K, Key, reverse=False)*
 
@@ -756,37 +760,27 @@ for i in res.take(10): print(i)
 ### Problem statement: Products table have multiple sub_total for same order_item_id. Our aim to get the top 3 sub_totals for all order_item_id.
 
 Example:
+```
+1,2,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,59.98,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy
+2,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+3,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
+4,2,Under Armour Men's Renegade D Mid Football Cl,,89.99,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
+5,2,Riddell Youth Revolution Speed Custom Footbal,,199.99,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
+6,2,Jordan Men's VI Retro TD Football Cleat,,134.99,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat
+7,2,Schutt Youth Recruit Hybrid Custom Football H,,99.99,http://images.acmesports.sports/Schutt+Youth+Recruit+Hybrid+Custom+Football+Helmet+2014
+8,2,Nike Men's Vapor Carbon Elite TD Football Cle,,129.99,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
+9,2,Nike Adult Vapor Jet 3.0 Receiver Gloves,,50.0,http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves
+```
 
-1,***2***,Quest Q64 10 FT. x 10 FT. Slant Leg Instant U,,***59.98***,http://images.acmesports.sports/Quest+Q64+10+FT.+x+10+FT.+Slant+Leg+Instant+Up+Canopy
-
-2,***2***,Under Armour Men's Highlight MC Football Clea,,***129.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
-
-3,***2***,Under Armour Men's Renegade D Mid Football Cl,,***89.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
-
-4,***2***,Under Armour Men's Renegade D Mid Football Cl,,***89.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Renegade+D+Mid+Football+Cleat
-
-5,***2***,Riddell Youth Revolution Speed Custom Footbal,,***199.99***,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
-
-6,***2***,Jordan Men's VI Retro TD Football Cleat,,***134.99***,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat
-
-7,***2***,Schutt Youth Recruit Hybrid Custom Football H,,***99.99***,http://images.acmesports.sports/Schutt+Youth+Recruit+Hybrid+Custom+Football+Helmet+2014
-
-8,***2***,Nike Men's Vapor Carbon Elite TD Football Cle,,***129.99***,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
-
-9,***2***,Nike Adult Vapor Jet 3.0 Receiver Gloves,,***50.0***,http://images.acmesports.sports/Nike+Adult+Vapor+Jet+3.0+Receiver+Gloves
-
-***We see that for the same id = 2 we have different sub_total. Our aim is to obtain only all rows within the top 3 values.***
+***We see that for the same id = 2 we have different sub_total. Our aim is to obtain only sets top 3 values.***
 
 **Sample result for id = 2:**
-
-5,***2***,Riddell Youth Revolution Speed Custom Footbal,,***199.99***,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
-
-6,***2***,Jordan Men's VI Retro TD Football Cleat,,***134.99***,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat
-
-2,***2***,Under Armour Men's Highlight MC Football Clea,,***129.99***,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
-
-8,***2***,Nike Men's Vapor Carbon Elite TD Football Cle,,***129.99***,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
-
+```
+5,2,Riddell Youth Revolution Speed Custom Footbal,,199.99,http://images.acmesports.sports/Riddell+Youth+Revolution+Speed+Custom+Football+Helmet
+6,2,Jordan Men's VI Retro TD Football Cleat,,134.99,http://images.acmesports.sports/Jordan+Men%27s+VI+Retro+TD+Football+Cleat
+2,2,Under Armour Men's Highlight MC Football Clea,,129.99,http://images.acmesports.sports/Under+Armour+Men%27s+Highlight+MC+Football+Cleat
+8,2,Nike Men's Vapor Carbon Elite TD Football Cle,,129.99,http://images.acmesports.sports/Nike+Men%27s+Vapor+Carbon+Elite+TD+Football+Cleat
+```
 ### Note: In the output we have 129.99 twice.
 
 ### Solution:
@@ -808,27 +802,7 @@ for i in k: print i
 ```
 ----
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def top_3_values(products_iterable):
+    
+    
 
