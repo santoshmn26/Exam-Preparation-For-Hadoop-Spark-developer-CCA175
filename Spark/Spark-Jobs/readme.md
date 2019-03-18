@@ -1,5 +1,5 @@
 ## Spark
-----
+
 ### Spark: Fast and general engine for large scale data processing
 
 ### Spark can run on Spark cluster, YARN or Hadoop cluster.
