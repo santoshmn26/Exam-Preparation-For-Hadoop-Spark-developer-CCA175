@@ -1,23 +1,23 @@
 ## Spark
 
-### Spark: Fast and general engine for large scale data processing
+ Spark: Fast and general engine for large scale data processing
 
-### Spark can run on Spark cluster, YARN or Hadoop cluster.
+ Spark can run on Spark cluster, YARN or Hadoop cluster.
 
-### Spark is faster than Hadoop MapReduce beause of ***DAG Engine***. It creates a graph of all the steps to take untill the res is required.
+ Spark is faster than Hadoop MapReduce beause of ***DAG Engine***. It creates a graph of all the steps to take untill the res is required.
 
-### Note: Noting happens unless an action is called in spark.l
+ Note: Noting happens unless an action is called in spark.l
 
-### Code in 
+ Code in 
 ```
 Python,
 Java
 Scala
 ```
 
-### Spark is built around one main concept: That is RDD
+ Spark is built around one main concept: That is RDD
 
-### Spark supports (ALL built on Spark Core)
+ Spark supports (ALL built on Spark Core)
 ```
 Spark streaming
 Spark SQL
@@ -25,11 +25,11 @@ ML-lib
 GraphX (Networks)
 ```
 
-### Spark - RDD - Resilient Distributed Dataset
+ Spark - RDD - Resilient Distributed Dataset
 
-### Fudamentally it's a ***Dataset***, which can be distributed across multiple clusters and also supports Fault tolerance.
+ Fudamentally it's a ***Dataset***, which can be distributed across multiple clusters and also supports Fault tolerance.
 
-### We can create RDD's using spark context ***sc***
+ We can create RDD's using spark context ***sc***
 ```
 nums=sc.parallelize([1,2,3])
 sc.textFile('/path')
@@ -45,7 +45,7 @@ Elastisearch
 Json, CSV, sequence Files, OBject Files, various compressed formats
 ```
 
-### We can Perform two main operations on RDD
+ We can Perform two main operations on RDD
 ```
 1. Transformation
 	a. map
