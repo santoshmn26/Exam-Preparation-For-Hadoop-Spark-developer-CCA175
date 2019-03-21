@@ -31,16 +31,16 @@
 | sample(rep,fraction,seed) | RDD/DF | returns a fraction of sample. |   
 | top(n,key) | RDD/DF | Returns a python list sorted based on key (lambda function) in ***desc (can be manipulated to return in desc)*** 
 | takeOrdered(n,key) | RDD/DF | Similar to top() but returns python list in ***asc (can be manipulated to return in desc)*** |
-| parallelize() | rdd | takes a list as input and converts it to rdd |
-| countByKey() | rdd | Takes (K,V) as inputs and returns (K,count(V)) as output. O/P format:  Python dict |
-| sortByKey() | rdd | Takes (K,V) or ((K1,K2),V).. sorts based on keys asc = True by default |
-| Union | - | Gets all the elements from both the data sets |
-| Intersection | - | Gets elements that are common in both data sets | 
-| Distinct | - | Gets distinct elements from the data set |
-| saveAsTextFile | - | Save a rdd or df to HDFS as a text file |
-| saveAsSequenceFile | - | Save a rdd or df to HDFS as a sequence file |
-| ***save(path,format)*** | - | ***Save a DF (Not RDD)to HDFS*** |
-| ***write.format(path)*** | - | ***Save a  DF (Not RDD)to HDFS*** |
+| parallelize() | RDD | takes a list as input and converts it to rdd |
+| countByKey() | RDD | Takes (K,V) as inputs and returns (K,count(V)) as output. O/P format:  Python dict |
+| sortByKey() | RDD | Takes (K,V) or ((K1,K2),V).. sorts based on keys asc = True by default |
+| Union | RDD/DF | Gets all the elements from both the data sets |
+| Intersection | RDD/DF | Gets elements that are common in both data sets | 
+| Distinct | RDD/DF | Gets distinct elements from the data set |
+| saveAsTextFile | RDD/DF | Save a rdd or df to HDFS as a text file |
+| saveAsSequenceFile | RDD/DF | Save a rdd or df to HDFS as a sequence file |
+| ***save(path,format)*** | RDD/DF | ***Save a DF (Not RDD)to HDFS*** |
+| ***write.format(path)*** | RDD/DF | ***Save a  DF (Not RDD)to HDFS*** |
 
 | No. | Examples |
 | --- |-------- |
