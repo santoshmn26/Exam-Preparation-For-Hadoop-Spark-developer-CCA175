@@ -29,9 +29,18 @@
 | aggregateByKey(,s,c) | RDD/DF | For input pairs (K,V) returns output pairs of (K,U), where V and U need not be of same data-type |
 | countByKey() | RDD/DF | Get a count of keys provides (K,V) returns (K,count(K)). Does not need a lambda function |
 | sample(rep,fraction,seed) | RDD/DF | returns a fraction of sample. |   
-| top(n,key) | RDD/DF | Returns a python list sorted based on key (lambda function) in ***desc (can be manipulated to return in desc)*** |
+| top(n,key) | RDD/DF | Returns a python list sorted based on key (lambda function) in ***desc (can be manipulated to return in desc)*** 
 | takeOrdered(n,key) | RDD/DF | Similar to top() but returns python list in ***asc (can be manipulated to return in desc)*** |
-
+| parallelize() | rdd | takes a list as input and converts it to rdd |
+| countByKey() | rdd | Takes (K,V) as inputs and returns (K,count(V)) as output. O/P format:  Python dict |
+| sortByKey() | rdd | Takes (K,V) or ((K1,K2),V).. sorts based on keys asc = True by default |
+| Union | - | - | Gets all the elements from both the data sets |
+| Intersection | - | - | Gets elements that are common in both data sets | 
+| Distinct | - | - | - | Gets distinct elements from the data set |
+| saveAsTextFile | - | - | Save a rdd or df to HDFS as a text file |
+| saveAsSequenceFile | - | - | Save a rdd or df to HDFS as a sequence file |
+| ***save(path,format)*** | - | - | ***Save a DF (Not RDD)to HDFS*** |
+| ***write.format(path)*** | - | - | ***Save a  DF (Not RDD)to HDFS*** |
 
 | No. | Examples |
 | --- |-------- |
@@ -77,7 +86,7 @@
 
 > Note: distinct() used on DF returns DataFrame\[col_name: col_type].
 
-
+ > Note: save and write works only on DF.***
 ### Difference between groupByKey and aggregateByKey, reduceByKey:
 
 groupByKey uses ***single thread*** example:
@@ -803,6 +812,89 @@ for i in k: print i
 ----
 
 def top_3_values(products_iterable):
-    
+
+
+----
+----
+### 25. Load data from mysql db using sqlContext
+
+**Problem statement: Load table orders from mysql into spark Data frame**
+
+**Solution:**
+```
+orders_data_frame = sqlContext.read.format("jdbc").options(
+url = "jdbc:mysql://localhost/retail_db", 
+user = "root", 
+password = "cloudera", 
+dbtable = "orders").load()
+```
+----
+### 26. Convert DF to RDD and RDD to DF
+
+**Problem statement: Converting a DF to RDD and RDD to DF.**
+> 1. DF to RDD
+```
+new_rdd = old_df.rdd.map(list)
+```
+> 2. RDD to DF
+```
+new_df = rdd_file.toDF(schema = ["order_id","order_item_id"])
+```
+----
+### 27. Using sets operations Union and Intersection.
+
+**Note: While using Sets operation make sure data from both the setes have a similar structure.**
+
+| Union | Full Outer join | Gets all the elements from both the data sets |
+| Intersection | Inner join | Gets elements that are common in both data sets | 
+| Distinct | - | Gets distinct elements from the data set |
+
+**Syntax: res = data_set_a.union(data_set_b)** 
+
+**Problem statement: create two data sets for year 2013-12 and 2014-01 and perform union**
+```
+orders = sc.textFile("/user/cloudera/spark/orders")
+o_2013_12 = orders.filter(lambda x: x.split(",")[1][:7]=="2013-12")
+o_2013_10 = orders.filter(lambda x: x.split(",")[1][:7]=="2013-10")
+res_union = o_2013_12.union(o_2013_10)
+res_intersection = o_2013_12.intersection(o_2013_10)
+res_subtraction = res_union.subtract(res_intersection)
+```
+----
+### 28. Using saveAsTextFile(path,compression=None) to save data in HDFS
+
+Syntax: rdd.saveAsTextFile("/path",compressionCodecClass=org.apache.hadoop.io.compression.SnappyCodec")
+```
+orders = sc.textFile("/user/cloudera/spark/orders")
+orders_map = orders.map(lambda x: (int(x.split(",")[0]),x.split(",")[3]))
+orders_map.saveAsTextFile("/user/cloudera/spark/output/orders_map_text")
+```
+----
+### 29. Using save and write to save data in HDFS
+
+**Problem statement: Save the data in json format using save and write**
+
+**Note: Save and write perform similar operations but with different syntax. Can use any one of the following**
+```
+orders.save("/user/cloudera/spark/json_orders","json")
+orders.write.json("/user/cloudera/spark/json_orders")
+```
+----
+### 30. Create a Data frame from RDD and write it to hdfs using save and write as json format.
+
+**Problem statement: Create a rdd of orders, map field[0] and field[3] and save as a DF with id and status as fields. Write the o/p to HDFS**
+```
+orders = sc.textFile("/user/cloudera/spark/orders")
+orders_map = orders.map(lambda x: (int(x.split(",")[0]),x.split(",")[3]))
+orders_map_df = orders_map.toDF(schema = ["id","status"])
+orders_map_df.show()
+orders_map_df.write.json("/user/cloudera/spark/output/json_orders_map_df")
+temp = sc.textFile("/user/cloudera/spark/output/json_orders_map_df")
+for i in temp.take(10): print i
+```
+----
+
+   
+   
     
 
