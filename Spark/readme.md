@@ -34,13 +34,13 @@
 | parallelize() | rdd | takes a list as input and converts it to rdd |
 | countByKey() | rdd | Takes (K,V) as inputs and returns (K,count(V)) as output. O/P format:  Python dict |
 | sortByKey() | rdd | Takes (K,V) or ((K1,K2),V).. sorts based on keys asc = True by default |
-| Union | - | - | Gets all the elements from both the data sets |
-| Intersection | - | - | Gets elements that are common in both data sets | 
-| Distinct | - | - | - | Gets distinct elements from the data set |
-| saveAsTextFile | - | - | Save a rdd or df to HDFS as a text file |
-| saveAsSequenceFile | - | - | Save a rdd or df to HDFS as a sequence file |
-| ***save(path,format)*** | - | - | ***Save a DF (Not RDD)to HDFS*** |
-| ***write.format(path)*** | - | - | ***Save a  DF (Not RDD)to HDFS*** |
+| Union | - | Gets all the elements from both the data sets |
+| Intersection | - | Gets elements that are common in both data sets | 
+| Distinct | - | Gets distinct elements from the data set |
+| saveAsTextFile | - | Save a rdd or df to HDFS as a text file |
+| saveAsSequenceFile | - | Save a rdd or df to HDFS as a sequence file |
+| ***save(path,format)*** | - | ***Save a DF (Not RDD)to HDFS*** |
+| ***write.format(path)*** | - | ***Save a  DF (Not RDD)to HDFS*** |
 
 | No. | Examples |
 | --- |-------- |
