@@ -13,7 +13,7 @@
 | **takeSample(rep,n,seed)** | **RDD** | ***Returns a list of size n with random number records from the rdd_file.*** |
 | count() | RDD/DF | count the number of records in the rdd_file/DF | 
 | **show()** | **DF** | ***Display pretty table of top 20 rows of a DF.*** | 
-| **persist()** | **DF** | ***Display column name and data type.*** |
+| **persist()** | **DF** | ***Store the DF in memory to avoid recomputation of the DF.*** |
 | **columns** | **DF** | ***Display only column names.*** |
 | collect() | RDD/DF | Displays the entire content of the rdd_file/DF. ***CAUTION while using this can cause huge load since the files are large.*** |
 | map() | RDD/DF | Return a new distributed dataset formed by passing each element of the source through a function func. |
