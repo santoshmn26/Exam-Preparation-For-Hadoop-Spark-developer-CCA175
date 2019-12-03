@@ -1,7 +1,4 @@
 ## Common issues in spark-sql
-
-***Note: .persist() .cache() is not an action!***
-***Note: .head() method should only be used if the resulting array is expected to be small, since as all the data is loaded into the driver’s memory.***
                        
 | No. | Common Tasks in spark |
 | --- | --------------------- |
@@ -25,6 +22,10 @@
 | 18 | When reading from multiple partitions get the source location for a each record |
 | 19 | Casting column in DF |
 | 20 | Adding new columns using UDF |
+
+
+***Note: .persist() .cache() is not an action!***
+***Note: .head() method should only be used if the resulting array is expected to be small, since as all the data is loaded into the driver’s memory.***
 
 ### Spark-SQL vs DF vs RDD
 ```
