@@ -1,30 +1,49 @@
 ## Common issues in spark-sql
 
-### Note: .persist() .cache() is not an action!
-### Note: .head() method should only be used if the resulting array is expected to be small, since as all the data is loaded into the driver’s memory.
-
-#### :set tabstop=4                                                                                                                                                
-
-### Running hive queries using spark
+***Note: .persist() .cache() is not an action!***
+***Note: .head() method should only be used if the resulting array is expected to be small, since as all the data is loaded into the driver’s memory.***
+                       
+| No. | Common Tasks in spark |
+| --- | --------------------- |
+| 1 | Adding a new column to a Dataframe in pyspark |
+| 2 | Changing the column name in a DataFrame in pyspark |
+| 3 | Drop a column in a DataFrame in pyspark |
+| 4 | Combining two dataframes |
+| 5 | Dataframe Show more than 20 rows |
+| 6 | Using where in a Dataframe |
+| 7 | DF read with header |
+| 8 | Get Distinct values of a column from a DF |
+| 9 | Replace Null values in a DF |
+| 10 | Filter DF if the col contains a string |
+| 11 | Adding a string to a col value  |
+| 12 | select from an existing col |
+| 13 | Read textfile with custom delimiter |
+| 14 | Filter out df is a column contains a substring |
+| 15 | Multiple join condition between two DF |
+| 16 | Multiple where conditions in a DF |
+| 17 | Decimal value limit decimal points |
+| 18 | When reading from multiple partitions get the source location for a each record |
+| 19 | Casting column in DF |
+| 20 | Adding new columns using UDF |
 
 ### Spark-SQL vs DF vs RDD
 ```
-stackoverflow: https://stackoverflow.com/questions/45430816/writing-sql-vs-using-dataframe-apis-in-spark-sql
-RDD is always faster for most types of Data processing.
-Most of the time Spark-sql and DF performance are consistant with each other.
+> stackoverflow: https://stackoverflow.com/questions/45430816/writing-sql-vs-using-dataframe-apis-in-spark-sql
+> RDD is always faster for most types of Data processing.
+> Most of the time Spark-sql and DF performance are consistant with each other.
 ```
 
 ```
 spark = SparkSession.builder.getOrCreate()
 query = "Select * from dummy_table"
 
-### Note this is not an action so, spark does not execute this statement as long as you don't perform any action on it.
+# Note this is not an action so, spark does not execute this statement as long as you don't perform any action on it.
 query_res = spark.sql(query)
 
-### Action on the dataframe
-
+# Action on the dataframe
 query_res.show()
 ```
+
 ### Adding a new column to a Dataframe in pyspark
 ```
 from pyspark.sql.functions import lit
@@ -70,6 +89,8 @@ DF.show(30, false)
 ### Using where in a Dataframe
 ```
 df.filter(df.age > 3).collect()
+or
+new_df = df.select("*").where(df.age > 3)
 ```
 
 ### DF read with header
@@ -96,14 +117,12 @@ null_replaced_df = df_with_null.na.fill('')
 null_replaced_df = df_with_null.na.fill(0)
 ```
 
-
 ### Filter DF if the col contains a string
 ```
 from pyspark.sql import col
 filtered_data = df.filter(col('col_name').contains('some_string'))
 filtered_data.show()
 ```
-
 
 ### Adding a string to a col value 
 ```
@@ -124,7 +143,6 @@ data = spark.read.option('delimiter', "|").csv("path")
 ```
 data = df.filter(~col('col_name').contains('tmp_string'))
 ```
-
 
 ### Multiple join condition between two DF
 ```
@@ -148,7 +166,6 @@ join_df = df1.join(df2, [ df1.col_1 == df2.col1, df1.col_2 == df2.col_2 ], 'left
 from pyspark.sql import functions as F
 df = df.withColumn('col_with_decimal_value', F.round(df.m_revenue,2))
 ```
-
 
 ### When reading from multiple partitions get the source location for a each record
 ```
@@ -194,17 +211,26 @@ new_df = ori_df.withColumn('new_col', udf_function(lit(ori_df.col_1))
 
 ```
 
-
 ### Spark read with custom schema
 
 ```
-from pyspark.sql.types import *  #(StructType, StringType, IntegerType)
+# Add all fields at a time.
+#(StructType, StringType, IntegerType)
+from pyspark.sql.types import *  
 columns = ([StructField('col_string',StringType()),
 			StructField('col_int',IntegerType())
-		   ]
-		  )
+		 ]
+		)
 		  
 custom_schema = StructType(fields = schema)
+data = spark.read.format('csv').options('sep', '/x100').load(path,schema = custom_schema)
 
+or
+
+# Adding one field at a time.
+custom_schema = structType()
+custom_schema.add(StructField('col_int',IntegerType()))
+custom_schema.add(StructField('col_string',StringType()))
 data = spark.read.format('csv').options('sep', '/x100').load(path,schema = custome_schema)
+
 ```
