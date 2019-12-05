@@ -22,6 +22,7 @@
 | 18 | When reading from multiple partitions get the source location for a each record |
 | 19 | Casting column in DF |
 | 20 | Adding new columns using UDF |
+| 21 | Replace empty strings in a DF |
 
 
 ***Note: .persist() .cache() is not an action!***
@@ -233,5 +234,19 @@ custom_schema = structType()
 custom_schema.add(StructField('col_int',IntegerType()))
 custom_schema.add(StructField('col_string',StringType()))
 data = spark.read.format('csv').options('sep', '/x100').load(path,schema = custome_schema)
+
+```
+
+### Replace '' or 'nan' or 'NA' with custom values
+
+```
+# Replace only selected columns
+list_of_cols = ['col1','col2]
+new_data = ori_data.replace('nan','No value',subset=list_of_cols)
+
+# Replace in entire row
+new_data = ori_data.replace('','No value')
+```
+
 
 ```
